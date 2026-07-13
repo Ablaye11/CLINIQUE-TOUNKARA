@@ -1,0 +1,91 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.env
+*.venv
+venv/
+ENV/
+env/
+.venv/
+.idea/
+.vscode/
+*.log
+*.pot
+*.pydevproject
+
+# Django
+*.sqlite3
+db.sqlite3
+pharmacie_db.sqlite3
+/staticfiles/
+/media/
+media/
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+.eggs/
+.eggs-info/
+.installed.cfg
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyCharm
+.idea/
+
+# Local env
+.env
+.env.*
+
+# PythonAnywhere
+*.sqlite3
+
+# Logs
+*.log

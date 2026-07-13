@@ -1,0 +1,248 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Gestion des Utilisateurs — Clinique Tounkara{% endblock %}
+
+{% block extra_css %}
+<style>
+    .users-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .user-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.2s;
+    }
+    .user-card:hover { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.04); }
+    .user-avatar-lg {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: white;
+        flex-shrink: 0;
+        letter-spacing: -0.5px;
+    }
+    .user-avatar-lg.caissier { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+    .user-card-info { flex: 1; min-width: 0; }
+    .user-card-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .user-card-username { font-size: 0.78rem; color: var(--text-muted); }
+    .role-badge {
+        font-size: 0.73rem;
+        padding: 0.2rem 0.65rem;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.2rem;
+    }
+    .role-admin { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+    .role-caissier { background: rgba(6,182,212,0.15); color: #22d3ee; border: 1px solid rgba(6,182,212,0.2); }
+    .role-superadmin { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+    .user-card-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 1.25rem;">
+    <div>
+        <h2 style="font-size:1.35rem;font-weight:700;"><i class="fa-solid fa-users-gear" style="color:var(--color-primary);margin-right:0.5rem;"></i>Gestion des Utilisateurs</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.2rem;">Créez et gérez les comptes du personnel de la pharmacie.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openAddUserModal()">
+        <i class="fa-solid fa-user-plus"></i> Ajouter un utilisateur
+    </button>
+</div>
+
+<!-- Légende des rôles -->
+<div style="display:flex;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:0.65rem 1rem;font-size:0.82rem;">
+        <span style="color:#fbbf24;font-weight:700;"><i class="fa-solid fa-crown"></i> Super-Admin</span>
+        <span style="color:var(--text-muted);margin-left:0.5rem;">— Accès total + Gestion des utilisateurs</span>
+    </div>
+    <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:10px;padding:0.65rem 1rem;font-size:0.82rem;">
+        <span style="color:#818cf8;font-weight:700;"><i class="fa-solid fa-user-shield"></i> Administrateur</span>
+        <span style="color:var(--text-muted);margin-left:0.5rem;">— Accès à toutes les pages (sauf gestion des users)</span>
+    </div>
+    <div style="background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:0.65rem 1rem;font-size:0.82rem;">
+        <span style="color:#22d3ee;font-weight:700;"><i class="fa-solid fa-cash-register"></i> Caissier</span>
+        <span style="color:var(--text-muted);margin-left:0.5rem;">— Accès uniquement à la Caisse (Ventes)</span>
+    </div>
+</div>
+
+<!-- Liste des utilisateurs -->
+<div class="users-grid" id="users-grid">
+    <!-- Rempli en JS -->
+</div>
+
+<!-- Modal Ajout/Modification Utilisateur -->
+<div class="modal" id="user-modal">
+    <div class="modal-content" style="max-width:460px;">
+        <div class="modal-header">
+            <h3 id="user-modal-title"><i class="fa-solid fa-user-plus" style="color:var(--color-primary);"></i> Nouvel Utilisateur</h3>
+            <button class="modal-close" onclick="closeUserModal()">&times;</button>
+        </div>
+        <form id="user-form" onsubmit="saveUser(event)">
+            <div class="modal-body">
+                <input type="hidden" id="user-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Prénom & Nom *</label>
+                        <input type="text" id="user-nom" class="input-control" placeholder="ex: Diallo Mamadou" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Identifiant (login) *</label>
+                        <input type="text" id="user-username" class="input-control" placeholder="ex: mamadou" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Rôle *</label>
+                        <select id="user-role" class="input-control">
+                            <option value="admin">👑 Administrateur</option>
+                            <option value="caissier">💰 Caissier</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe *</label>
+                        <input type="password" id="user-password" class="input-control" placeholder="Min. 4 caractères" autocomplete="new-password">
+                        <small style="color:var(--text-muted);font-size:0.72rem;">Laissez vide pour ne pas modifier (modification uniquement).</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadUsers() {
+        fetch('/api/utilisateurs/')
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('users-grid');
+                grid.innerHTML = '';
+                if (data.users.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:3rem;"><i class="fa-solid fa-users" style="font-size:2.5rem;opacity:0.2;display:block;margin-bottom:0.75rem;"></i>Aucun utilisateur configuré.</div>';
+                    return;
+                }
+                data.users.forEach(u => {
+                    let roleClass = 'role-admin';
+                    let roleName = 'Administrateur';
+                    let avatarClass = '';
+                    let roleIcon = 'fa-user-shield';
+                    if (u.role === 'superadmin') {
+                        roleClass = 'role-superadmin'; roleName = 'Super-Admin'; roleIcon = 'fa-crown';
+                    } else if (u.role === 'caissier') {
+                        roleClass = 'role-caissier'; roleName = 'Caissier'; avatarClass = 'caissier'; roleIcon = 'fa-cash-register';
+                    }
+                    const initials = u.nom.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+
+                    const actionsHtml = u.role !== 'superadmin' ? `
+                        <button class="btn-action-icon edit" onclick="editUser(${JSON.stringify(u).replace(/"/g,'&quot;')})" title="Modifier">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn-action-icon delete" onclick="deleteUser(${u.id}, '${u.nom.replace(/'/g,"\\'")}', '${u.role}')" title="Supprimer">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>` : `<span style="font-size:0.75rem;color:var(--text-muted);">Compte protégé</span>`;
+
+                    grid.innerHTML += `
+                        <div class="user-card">
+                            <div class="user-avatar-lg ${avatarClass}">${initials}</div>
+                            <div class="user-card-info">
+                                <div class="user-card-name">${u.nom}</div>
+                                <div class="user-card-username"><i class="fa-solid fa-at" style="opacity:0.5;margin-right:2px;"></i>${u.username}</div>
+                                <span class="role-badge ${roleClass}"><i class="fa-solid ${roleIcon}"></i> ${roleName}</span>
+                            </div>
+                            <div class="user-card-actions">${actionsHtml}</div>
+                        </div>`;
+                });
+            });
+    }
+
+    function openAddUserModal() {
+        document.getElementById('user-modal-title').innerHTML = '<i class="fa-solid fa-user-plus" style="color:var(--color-primary);"></i> Nouvel Utilisateur';
+        document.getElementById('user-form').reset();
+        document.getElementById('user-id').value = '';
+        document.getElementById('user-password').required = true;
+        document.querySelector('#user-form [type="submit"]').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Créer le compte';
+        document.getElementById('user-modal').classList.add('active');
+    }
+
+    function editUser(u) {
+        document.getElementById('user-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--color-primary);"></i> Modifier Utilisateur';
+        document.getElementById('user-id').value = u.id;
+        document.getElementById('user-nom').value = u.nom;
+        document.getElementById('user-username').value = u.username;
+        document.getElementById('user-role').value = u.role;
+        document.getElementById('user-password').value = '';
+        document.getElementById('user-password').required = false;
+        document.querySelector('#user-form [type="submit"]').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Enregistrer';
+        document.getElementById('user-modal').classList.add('active');
+    }
+
+    function closeUserModal() {
+        document.getElementById('user-modal').classList.remove('active');
+    }
+
+    function saveUser(event) {
+        event.preventDefault();
+        const payload = {
+            id: document.getElementById('user-id').value || null,
+            nom: document.getElementById('user-nom').value.trim(),
+            username: document.getElementById('user-username').value.trim(),
+            role: document.getElementById('user-role').value,
+            password: document.getElementById('user-password').value,
+        };
+        fetch('/api/utilisateurs/save/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Utilisateur enregistré avec succès !');
+                closeUserModal();
+                loadUsers();
+            } else {
+                showToast(data.error || 'Erreur lors de la sauvegarde', 'danger');
+            }
+        });
+    }
+
+    function deleteUser(id, nom, role) {
+        if (confirm(`Supprimer le compte de "${nom}" ?\nCette action est irréversible.`)) {
+            fetch(`/api/utilisateurs/delete/${id}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrfToken }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Compte supprimé.');
+                    loadUsers();
+                } else {
+                    showToast(data.error || 'Erreur', 'danger');
+                }
+            });
+        }
+    }
+
+    loadUsers();
+</script>
+{% endblock %}

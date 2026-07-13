@@ -1,0 +1,271 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Tableau de bord — Gestion Pharmaceutique{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 2rem;">
+    <h2>Tableau de bord</h2>
+    <p style="color: var(--text-secondary);">Aperçu en temps réel de votre activité pharmaceutique</p>
+</div>
+
+<!-- KPI Grid -->
+<div class="grid-kpi">
+    <!-- Valeur du Stock -->
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-details">
+            <span>Valeur du stock</span>
+            <h2 id="kpi-valeur-stock">0 FCFA</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                Achat: <span id="kpi-valeur-achat">0</span> FCFA
+            </small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-coins"></i>
+        </div>
+    </div>
+    
+    <!-- Nombre Total de Médicaments -->
+    <div class="kpi-card kpi-blue">
+        <div class="kpi-details">
+            <span>Médicaments</span>
+            <h2 id="kpi-total-meds">0</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Références en stock</small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-pills"></i>
+        </div>
+    </div>
+
+    <!-- Ventes du jour -->
+    <div class="kpi-card kpi-green">
+        <div class="kpi-details">
+            <span>Ventes du jour</span>
+            <h2 id="kpi-ventes-jour">0 FCFA</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Aujourd'hui</small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+    </div>
+
+    <!-- Achats / Entrées du jour -->
+    <div class="kpi-card kpi-green">
+        <div class="kpi-details">
+            <span>Entrées du jour</span>
+            <h2 id="kpi-achats-jour">0 FCFA</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Valeur d'achat reçue</small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-arrow-down-long"></i>
+        </div>
+    </div>
+
+    <!-- Produits en Rupture -->
+    <div class="kpi-card kpi-danger">
+        <div class="kpi-details">
+            <span>En rupture</span>
+            <h2 id="kpi-ruptures">0</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">À commander d'urgence</small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <!-- Proches Expiration -->
+    <div class="kpi-card kpi-warning">
+        <div class="kpi-details">
+            <span>Expirations Proches</span>
+            <h2 id="kpi-expirations">0</h2>
+            <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Moins de 30 jours</small>
+        </div>
+        <div class="kpi-icon">
+            <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Charts section -->
+<div class="charts-grid">
+    <!-- Main Sales Chart -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-chart-area" style="color: var(--color-primary);"></i> Analyse des 7 derniers jours</h3>
+        <div style="position: relative; height: 320px;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Short Alert Panel -->
+    <div class="chart-card" style="display: flex; flex-direction: column;">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--color-danger);"></i> Alertes prioritaires</h3>
+        <div id="dashboard-alerts-list" style="flex-grow: 1; overflow-y: auto; max-height: 320px; display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Rempli en JS -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let salesChart = null;
+
+    function formatFCFA(val) {
+        return new Intl.NumberFormat('fr-FR').format(val) + " FCFA";
+    }
+
+    function initDashboard() {
+        fetch('/api/dashboard/stats/')
+            .then(res => res.json())
+            .then(data => {
+                // Update KPIs
+                document.getElementById('kpi-valeur-stock').innerText = formatFCFA(data.valeur_stock_vente);
+                document.getElementById('kpi-valeur-achat').innerText = new Intl.NumberFormat('fr-FR').format(data.valeur_stock_achat);
+                document.getElementById('kpi-total-meds').innerText = data.nb_medicaments;
+                document.getElementById('kpi-ventes-jour').innerText = formatFCFA(data.ventes_du_jour);
+                document.getElementById('kpi-achats-jour').innerText = formatFCFA(data.achats_du_jour);
+                document.getElementById('kpi-ruptures').innerText = data.ruptures;
+                document.getElementById('kpi-expirations').innerText = data.expirations_proches;
+
+                // Render Chart
+                renderSalesChart(data.graph);
+            });
+
+        // Charger aussi les alertes rapides
+        fetch('/api/medicaments/')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('dashboard-alerts-list');
+                list.innerHTML = '';
+                
+                // Prendre les médicaments en rupture ou expirés
+                const alertes = data.medicaments.filter(m => m.statut === 'Rupture' || m.statut === 'Expiré' || m.statut === 'Stock faible');
+                
+                if (alertes.length === 0) {
+                    list.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); margin-top: 2rem;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: var(--color-success); margin-bottom: 0.5rem; display: block;"></i>
+                            Aucune alerte en cours
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Afficher les 5 premières alertes
+                alertes.slice(0, 5).forEach(med => {
+                    const item = document.createElement('div');
+                    item.style.padding = '0.75rem';
+                    item.style.background = 'var(--bg-input)';
+                    item.style.borderRadius = '8px';
+                    item.style.borderLeft = '4px solid';
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.style.alignItems = 'center';
+                    
+                    if (med.statut === 'Rupture') {
+                        item.style.borderLeftColor = 'var(--color-danger)';
+                        item.innerHTML = `
+                            <div>
+                                <h5 style="margin: 0; font-size: 0.9rem;">${med.nom}</h5>
+                                <small style="color: var(--text-muted);">Stock épuisé</small>
+                            </div>
+                            <span class="badge-status badge-expire">Rupture</span>
+                        `;
+                    } else if (med.statut === 'Expiré') {
+                        item.style.borderLeftColor = 'var(--color-danger)';
+                        item.innerHTML = `
+                            <div>
+                                <h5 style="margin: 0; font-size: 0.9rem;">${med.nom}</h5>
+                                <small style="color: var(--text-muted);">Expiré le ${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</small>
+                            </div>
+                            <span class="badge-status badge-expire">Expiré</span>
+                        `;
+                    } else {
+                        item.style.borderLeftColor = 'var(--color-warning)';
+                        item.innerHTML = `
+                            <div>
+                                <h5 style="margin: 0; font-size: 0.9rem;">${med.nom}</h5>
+                                <small style="color: var(--text-muted);">Disponible: ${med.stock} (Min: ${med.stock_minimum})</small>
+                            </div>
+                            <span class="badge-status badge-faible">Faible</span>
+                        `;
+                    }
+                    list.appendChild(item);
+                });
+            });
+    }
+
+    function renderSalesChart(graphData) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        if (salesChart) {
+            salesChart.destroy();
+        }
+
+        salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: graphData.labels,
+                datasets: [
+                    {
+                        label: 'Ventes (FCFA)',
+                        data: graphData.ventes,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Bénéfices estimés (FCFA)',
+                        data: graphData.benefices,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#9ca3af',
+                            font: { family: 'Outfit' }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { family: 'Outfit' },
+                            callback: function(value) {
+                                return value.toLocaleString() + ' F';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { family: 'Outfit' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Charger au démarrage
+    initDashboard();
+    
+    // Auto-refresh toutes les 10 secondes pour multi-poste en temps réel
+    setInterval(initDashboard, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,1385 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Vente Rapide — Clinique Tounkara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ========================================
+       PAGE CAISSE — Vente Rapide (Layout fixe)
+       ======================================== */
+    html, body, .app-container {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Override base .main-content for the POS page */
+    .main-content {
+        padding: 0.75rem 1.25rem !important;
+        overflow: hidden !important;
+        flex-grow: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important; /* flex child must shrink */
+    }
+
+    /* Layout principal 2 colonnes */
+    .pos-layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        grid-template-rows: minmax(0, 1fr);
+        gap: 1rem;
+        flex: 1;
+        min-height: 0; /* Crucial pour que flex enfant respecte la hauteur */
+        height: 100% !important; /* Force le layout à occuper exactement la hauteur de main-content */
+        overflow: hidden;
+    }
+
+    /* Panneau gauche : catalogue */
+    .pos-products {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    .pos-products-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .pos-products-header h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+
+    .pos-product-list {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+        gap: 0.75rem;
+        padding-right: 2px;
+        align-content: start;
+    }
+
+    .pos-product-card {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 0.85rem;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 110px;
+    }
+
+    .pos-product-card:hover {
+        border-color: var(--color-primary);
+        background: rgba(99,102,241,0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+    }
+
+    .pos-product-card h4 {
+        font-size: 0.82rem;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 0.35rem;
+        color: var(--text-primary);
+    }
+
+    .pos-product-card .pos-cat {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    .pos-product-card .pos-price {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-primary);
+    }
+
+    .pos-product-card .pos-stock-badge {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+    }
+
+    .pos-product-card .pos-add-btn {
+        width: 30px;
+        height: 30px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        transition: background 0.15s;
+    }
+
+    .pos-product-card .pos-add-btn:hover {
+        background: #5053e6;
+    }
+
+    .pos-product-card .pos-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 0.5rem;
+    }
+
+    /* Panneau droit : Panier (Flexbox fixe) */
+    .pos-cart {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        min-height: 0;
+        height: 100%;
+        padding: 0 !important;
+        position: relative; /* Nécessaire pour les boutons flottants en position absolute */
+    }
+
+    /* Boutons flottants de navigation Haut/Bas dans la caisse */
+    .cart-scroll-nav {
+        position: absolute;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        z-index: 10;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .cart-scroll-nav.at-top { top: 55px; }
+    .cart-scroll-nav.at-bottom { bottom: 12px; }
+
+    .cart-scroll-nav button {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        border: 1px solid rgba(99,102,241,0.35);
+        background: rgba(13,20,35,0.82);
+        backdrop-filter: blur(8px);
+        color: var(--color-primary);
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.18s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.85);
+    }
+
+    .cart-scroll-nav button.visible {
+        opacity: 1;
+        pointer-events: all;
+        transform: scale(1);
+    }
+
+    .cart-scroll-nav button:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 12px rgba(99,102,241,0.5);
+        transform: scale(1.1);
+    }
+
+    .pos-cart-header {
+        padding: 1rem 1.2rem 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(99,102,241,0.04);
+    }
+
+    .pos-cart-header h3 {
+        font-size: 0.98rem;
+        font-weight: 600;
+        flex-grow: 1;
+    }
+
+    /* Zone scrollable UNIQUE : articles + client + paiement + total + bouton */
+    .cart-scroll-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(99,102,241,0.25) transparent;
+    }
+
+    /* Articles du panier */
+    .cart-items-wrapper {
+        padding: 0.75rem 1.2rem 0;
+        flex-shrink: 0; /* Prend juste la place nécessaire */
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--border-color);
+        min-width: 0; /* Permet le rétrécissement de l'item */
+    }
+
+    .cart-item > div:first-child {
+        min-width: 0; /* Permet à la colonne du nom d'être réduite */
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item h5 {
+        font-size: 0.82rem;
+        font-weight: 600;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Tronque le nom s'il est trop long au lieu de pousser les colonnes */
+    }
+
+    .cart-item small {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.72rem;
+    }
+
+    .cart-item-qty {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .cart-item-qty button {
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        color: white;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-item-qty button:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .cart-item-qty span {
+        width: 24px;
+        text-align: center;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .cart-item-total {
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-align: right;
+        color: var(--text-primary);
+        min-width: 60px;
+    }
+
+    .cart-item-remove {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 0.1rem 0.2rem;
+        border-radius: 4px;
+        transition: color 0.15s;
+    }
+
+    .cart-item-remove:hover {
+        color: var(--color-danger);
+    }
+
+    /* Séparateur avant footer */
+    .cart-footer-divider {
+        height: 2px;
+        background: var(--border-color);
+        margin: 0.5rem 0 0;
+        flex-shrink: 0;
+    }
+
+    /* Footer dans le scroll (client + paiement + total + bouton) */
+    .pos-cart-footer {
+        flex-shrink: 0;
+        padding: 0.85rem 1.2rem 1.25rem;
+        background: rgba(0,0,0,0.08);
+        margin-top: auto; /* Pousse le footer vers le bas si peu d'articles */
+    }
+
+    /* Suppression de l'ancien wrapper inner (plus nécessaire) */
+    .pos-cart-footer-inner {
+        padding: 0;
+    }
+
+    /* Section Client dépliable */
+    .pos-client-bar {
+        background: rgba(99,102,241,0.07);
+        border: 1px solid rgba(99,102,241,0.15);
+        border-radius: 8px;
+        padding: 0.6rem 0.85rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pos-client-bar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-primary);
+    }
+
+    .pos-client-bar-top i.chevron {
+        transition: transform 0.2s;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Grille formulaire client — animation fluide */
+    .client-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.45rem;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 1px solid rgba(99,102,241,0.12);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding-top 0.3s ease, margin-top 0.3s ease;
+    }
+
+    .client-form-grid.open {
+        max-height: 300px;
+        margin-top: 0.65rem;
+        padding-top: 0.65rem;
+    }
+
+    .client-form-grid .cfield {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .client-form-grid .cfield.full {
+        grid-column: span 2;
+    }
+
+    .client-form-grid label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .client-form-grid input {
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.35rem 0.55rem;
+        color: white;
+        font-size: 0.82rem;
+        outline: none;
+        width: 100%;
+        transition: border-color 0.15s;
+    }
+
+    .client-form-grid input:focus {
+        border-color: var(--color-primary);
+    }
+
+    /* Mode de paiement */
+    .pos-payment-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .pos-payment-row label {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    .pos-payment-row select {
+        flex: 1;
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.38rem 0.6rem;
+        color: white;
+        font-size: 0.82rem;
+        outline: none;
+    }
+
+    /* Total row */
+    .pos-totals {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.75rem;
+    }
+
+    .pos-totals .label {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+    }
+
+    .pos-totals .amount {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--color-success);
+        letter-spacing: -0.5px;
+    }
+
+    .pos-totals .count {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .btn-validate {
+        width: 100%;
+        background: linear-gradient(135deg, var(--color-success), #0da070);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.95rem 1rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        transition: all 0.22s ease;
+        box-shadow: 0 4px 18px rgba(16,185,129,0.35);
+        letter-spacing: 0.02em;
+        margin-top: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-validate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(16,185,129,0.5);
+        background: linear-gradient(135deg, #12c988, #0bbf88);
+    }
+
+    .btn-validate:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+    }
+
+    .btn-validate:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Empty cart message */
+    .cart-empty-msg {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-muted);
+        text-align: center;
+        gap: 0.75rem;
+        padding: 2rem;
+    }
+
+    .cart-empty-msg i {
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+
+    .cart-empty-msg p {
+        font-size: 0.85rem;
+    }
+
+    /* Adaptabilité responsive de la caisse POS */
+    @media (max-width: 768px) {
+        .pos-layout {
+            grid-template-columns: 1fr !important;
+            height: auto !important;
+            overflow-y: auto !important;
+            gap: 1.25rem;
+        }
+
+        /* Permettre à la page POS de défiler verticalement sur mobile */
+        .main-content {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        .pos-products {
+            height: 480px !important; /* Hauteur fixe pour le catalogue pour voir le panier dessous */
+            flex-shrink: 0;
+        }
+
+        .pos-cart {
+            height: auto !important;
+            min-height: 450px;
+        }
+    }
+
+    /* Onglets du panier */
+    .pos-tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .pos-tab:hover {
+        color: var(--text-primary);
+        background: rgba(255,255,255,0.02);
+    }
+
+    .pos-tab.active {
+        border-bottom-color: var(--color-primary) !important;
+        color: var(--text-primary) !important;
+        background: rgba(99,102,241,0.04);
+    }
+
+    @keyframes pulse-danger {
+        0% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.12); opacity: 1; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        100% { transform: scale(1); opacity: 0.9; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pos-layout">
+    
+    <!-- Left Pane: Product Catalog -->
+    <div class="pos-products">
+        <div class="pos-products-header">
+            <h3><i class="fa-solid fa-capsules" style="color:var(--color-primary);"></i> Catalogue médicaments</h3>
+            <div style="display:flex;gap:0.5rem;flex:1;max-width:350px;">
+                <input type="text" id="pos-search-input" class="input-control" placeholder="Rechercher par nom, code..." style="flex-grow:1;padding:0.45rem 0.85rem;font-size:0.88rem;" oninput="searchPOSMedicaments()">
+                <button class="btn btn-secondary" onclick="openPOSBarcodeScan()" title="Scanner Code-barres" style="padding:0.45rem 0.75rem;"><i class="fa-solid fa-barcode"></i></button>
+            </div>
+        </div>
+        
+        <div class="pos-product-list" id="pos-catalog-container">
+            <!-- Rempli en JS -->
+        </div>
+    </div>
+
+    <!-- Right Pane: Cart & History with Tabs -->
+    <div class="pos-cart">
+
+        <!-- Header avec onglets -->
+        <div class="pos-cart-header" style="padding: 0; display: flex; gap: 0; align-items: stretch; border-bottom: 1px solid var(--border-color); background: rgba(99,102,241,0.04); flex-shrink: 0; height: 48px;">
+            <button id="tab-cart-btn" class="pos-tab active" onclick="switchCartTab('cart')">
+                <i class="fa-solid fa-cart-shopping"></i> Panier
+                <span id="pos-cart-count-badge" style="background:var(--color-primary);color:white;border-radius:20px;padding:0.1rem 0.45rem;font-size:0.68rem;font-weight:700;display:none;margin-left:4px;">0</span>
+            </button>
+            <button id="tab-history-btn" class="pos-tab" onclick="switchCartTab('history')">
+                <i class="fa-solid fa-clock-rotate-left"></i> Historique (Jour)
+                <span id="pos-history-count-badge" style="background:var(--color-warning);color:var(--bg-main);border-radius:20px;padding:0.1rem 0.45rem;font-size:0.68rem;font-weight:700;display:none;margin-left:4px;">0</span>
+            </button>
+        </div>
+
+        <!-- Zone scrollable : articles du panier -->
+        <div class="cart-scroll-body" id="cart-scroll-body" style="flex: 1; min-height: 0; overflow-y: auto;">
+            <!-- Articles du panier -->
+            <div class="cart-items-wrapper" id="cart-items-container" style="padding: 0.75rem 1.2rem 0;">
+                <div class="cart-empty-msg" id="cart-empty-msg">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <p>Cliquez sur un médicament<br>pour l'ajouter au panier</p>
+                </div>
+            </div>
+
+            <!-- Client & Mode de paiement (dans la zone défilante) -->
+            <div id="cart-scroll-footer" style="padding: 0 1.2rem 1.25rem; border-top: 1px solid var(--border-color); display: none;">
+                <!-- Client dépliable -->
+                <div class="pos-client-bar" style="margin-top: 0.75rem;">
+                    <div class="pos-client-bar-top" onclick="toggleClientInfo()">
+                        <span><i class="fa-solid fa-user"></i>&nbsp; Client : <span id="pos-client-summary" style="color:var(--text-primary);font-weight:700;">Passant</span></span>
+                        <i class="fa-solid fa-chevron-down chevron" id="client-toggle-icon"></i>
+                    </div>
+                    <div class="client-form-grid" id="client-info-form">
+                        <div class="cfield full">
+                            <label>Nom complet</label>
+                            <input type="text" id="pos-client-name" placeholder="Diallo Mamadou / Passant" value="Passant" oninput="updateClientSummary()">
+                        </div>
+                        <div class="cfield">
+                            <label>Âge</label>
+                            <input type="text" id="pos-client-age" placeholder="Âge (ex: 25, 6 mois...)">
+                        </div>
+                        <div class="cfield">
+                            <label>Téléphone</label>
+                            <input type="text" id="pos-client-telephone" placeholder="+221 7X XXX XX XX">
+                        </div>
+                        <div class="cfield full">
+                            <label>Adresse</label>
+                            <input type="text" id="pos-client-adresse" placeholder="Quartier, Ville...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode de paiement -->
+                <div class="pos-payment-row" style="margin-top: 0.75rem; margin-bottom: 0;">
+                    <label><i class="fa-solid fa-credit-card"></i> Paiement :</label>
+                    <select id="pos-payment-method">
+                        <option value="ESPECES">💵 Espèces</option>
+                        <option value="OM">🟠 Orange Money</option>
+                        <option value="WAVE">🔵 Wave</option>
+                        <option value="CHEQUE">📄 Chèque</option>
+                        <option value="COMPTE">🏥 Compte Clinique</option>
+                    </select>
+                </div>
+            </div>
+        </div><!-- /.cart-scroll-body -->
+
+        <!-- Footer FIXE au bas (hors scroll) visible uniquement pour l'onglet Panier -->
+        <div class="pos-cart-footer" id="cart-footer-container" style="flex-shrink: 0; padding: 0.85rem 1.2rem 1.25rem; background: rgba(0,0,0,0.15); border-top: 1px solid var(--border-color);">
+
+            <!-- Total -->
+            <div class="pos-totals">
+                <div>
+                    <div class="label">Total à encaisser</div>
+                    <div class="count" id="pos-cart-count-text">0 article</div>
+                </div>
+                <div class="amount" id="pos-cart-total">0 FCFA</div>
+            </div>
+
+            <!-- Bouton validation -->
+            <button class="btn-validate" id="btn-validate-sale" onclick="validatePOSSale()" disabled>
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                Valider et Imprimer
+            </button>
+
+        </div><!-- /.pos-cart-footer -->
+
+        <!-- Zone scrollable Historique du Jour -->
+        <div class="cart-scroll-body" id="history-scroll-body" style="display: none; flex: 1; min-height: 0; overflow-y: auto; padding: 1rem; flex-direction: column;">
+            <div id="history-items-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <!-- Rempli en JS -->
+            </div>
+        </div>
+
+    </div><!-- /.pos-cart -->
+</div><!-- /.pos-layout -->
+
+
+<!-- Modal barcode scan -->
+<div class="modal" id="pos-barcode-modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Scanner Code-barres</h3>
+            <button class="modal-close" onclick="closePOSBarcode()">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <input type="text" id="pos-scan-code" class="input-control" style="width: 100%; text-align: center; font-size: 1.2rem; font-weight: bold;" placeholder="Scanner ou taper le code" autofocus>
+            <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem;">Scannez le code du produit pour l'ajouter automatiquement au panier.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closePOSBarcode()">Annuler</button>
+            <button class="btn btn-primary" onclick="processPOSBarcodeScan()">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Facture -->
+<div class="modal" id="facture-modal">
+    <div class="modal-content" style="max-width: 450px; background: #fff; color: #000;">
+        <div class="modal-header" style="border-bottom-color: #ddd;">
+            <h3 style="color: #000;">Facture Client</h3>
+            <button class="modal-close" onclick="closeFactureModal()" style="color: #000;">&times;</button>
+        </div>
+        <div class="modal-body" id="facture-print-body" style="color: #000; font-family: monospace;">
+        </div>
+        <div class="modal-footer" style="border-top-color: #ddd;">
+            <button class="btn btn-secondary" onclick="closeFactureModal()">Fermer</button>
+            <button class="btn btn-primary" onclick="printReceipt()"><i class="fa-solid fa-print"></i> Imprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmation d'Annulation de Facture -->
+<div class="modal" id="confirm-cancel-modal">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid rgba(239, 68, 68, 0.25); box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(239, 68, 68, 0.15); background: #0f172a;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 1.25rem 1.5rem;">
+            <h3 style="color: var(--color-danger); display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700;">
+                <i class="fa-solid fa-triangle-exclamation" style="animation: pulse-danger 2s infinite; color: var(--color-danger);"></i>
+                Annuler la Facture
+            </h3>
+            <button class="modal-close" onclick="closeCancelSaleModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 2rem 1.5rem; text-align: center;">
+            <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 1.25rem;">
+                Êtes-vous sûr de vouloir annuler la facture <strong id="cancel-invoice-num" style="color: var(--color-danger); font-family: monospace; font-size: 1.15rem; background: rgba(239, 68, 68, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2); letter-spacing: 0.5px;"></strong> ?
+            </p>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.02); padding: 0.85rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; width: 100%; box-sizing: border-box;">
+                <i class="fa-solid fa-boxes-stacked" style="color: var(--color-success); font-size: 1.2rem; flex-shrink: 0;"></i>
+                <span>Cette action restituera immédiatement le stock des médicaments vendus.</span>
+            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding: 1.25rem 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="closeCancelSaleModal()" style="border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); padding: 0.6rem 1.2rem; font-weight: 500; font-size: 0.88rem;">
+                Non, garder
+            </button>
+            <button class="btn btn-danger" id="btn-confirm-cancel-execute" style="background: var(--color-danger); color: white; border: none; padding: 0.6rem 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); font-size: 0.88rem;">
+                <i class="fa-solid fa-trash-can"></i> Oui, annuler
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let posCatalog = [];
+    let cart = [];
+
+    function loadPOSCatalog() {
+        fetch('/api/medicaments/')
+            .then(res => res.json())
+            .then(data => {
+                posCatalog = data.medicaments;
+                renderPOSCatalog(posCatalog);
+            });
+    }
+
+    function renderPOSCatalog(items) {
+        const container = document.getElementById('pos-catalog-container');
+        container.innerHTML = '';
+
+        const sellable = items.filter(m => m.statut !== 'Expiré' && m.stock > 0);
+
+        if (sellable.length === 0) {
+            container.innerHTML = `<div style="grid-column:span 4;text-align:center;color:var(--text-muted);padding:3rem;"><i class="fa-solid fa-box-open" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>Aucun médicament disponible à la vente</div>`;
+            return;
+        }
+
+        sellable.forEach(med => {
+            const card = document.createElement('div');
+            card.className = 'pos-product-card';
+            
+            let stockColor = 'var(--text-muted)';
+            if (med.stock <= med.stock_minimum) stockColor = 'var(--color-warning)';
+            
+            card.innerHTML = `
+                <div>
+                    <h4>${med.nom}</h4>
+                    <div class="pos-cat">${med.categorie}</div>
+                </div>
+                <div class="pos-bottom">
+                    <div>
+                        <div class="pos-price">${new Intl.NumberFormat('fr-FR').format(med.prix_vente)} <small style="font-size:0.65rem;font-weight:600;opacity:0.7;">FCFA</small></div>
+                        <div class="pos-stock-badge" style="color:${stockColor};">Stock : ${med.stock}</div>
+                    </div>
+                    <button class="pos-add-btn" onclick="addToCart(${med.id})" title="Ajouter au panier">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function searchPOSMedicaments() {
+        const query = document.getElementById('pos-search-input').value.toLowerCase();
+        const filtered = posCatalog.filter(m =>
+            m.nom.toLowerCase().includes(query) ||
+            m.code.toLowerCase().includes(query) ||
+            m.categorie.toLowerCase().includes(query)
+        );
+        renderPOSCatalog(filtered);
+    }
+
+    function addToCart(medId) {
+        const product = posCatalog.find(p => p.id === medId);
+        if (!product) return;
+
+        const existing = cart.find(item => item.medicament_id === medId);
+        if (existing) {
+            if (existing.quantite < product.stock) {
+                existing.quantite++;
+            } else {
+                showToast(`Stock maximum atteint (${product.stock} dispo)`, 'warning');
+            }
+        } else {
+            cart.push({
+                medicament_id: product.id,
+                nom: product.nom,
+                prix_vente: product.prix_vente,
+                stock: product.stock,
+                quantite: 1,
+                remise: 0
+            });
+        }
+        renderCart();
+    }
+
+    function changeCartQty(index, delta) {
+        const item = cart[index];
+        const newQty = item.quantite + delta;
+        if (newQty <= 0) {
+            cart.splice(index, 1);
+        } else if (newQty <= item.stock) {
+            item.quantite = newQty;
+        } else {
+            showToast(`Stock max : ${item.stock}`, 'warning');
+        }
+        renderCart();
+    }
+
+    function changeCartRemise(index, val) {
+        let remiseVal = parseFloat(val);
+        if (isNaN(remiseVal) || remiseVal < 0) {
+            remiseVal = 0;
+        } else if (remiseVal > 100) {
+            remiseVal = 100;
+        }
+        cart[index].remise = remiseVal;
+
+        // Recalculer le total de ligne et mettre à jour le DOM sans redessiner pour garder le focus
+        const lineTotal = cart[index].prix_vente * cart[index].quantite * (1 - remiseVal / 100);
+        const itemElements = document.querySelectorAll('.cart-item');
+        if (itemElements[index]) {
+            itemElements[index].querySelector('.cart-item-total').innerText = new Intl.NumberFormat('fr-FR').format(lineTotal) + ' F';
+        }
+
+        // Recalculer le total global
+        let total = 0;
+        cart.forEach(item => {
+            total += item.prix_vente * item.quantite * (1 - (item.remise || 0) / 100);
+        });
+        document.getElementById('pos-cart-total').innerText = new Intl.NumberFormat('fr-FR').format(total) + ' FCFA';
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        const emptyMsg = document.getElementById('cart-empty-msg');
+        const badge = document.getElementById('pos-cart-count-badge');
+        const countText = document.getElementById('pos-cart-count-text');
+        const totalEl = document.getElementById('pos-cart-total');
+        const validateBtn = document.getElementById('btn-validate-sale');
+
+        // Vider uniquement les items (garder le empty msg)
+        Array.from(container.children).forEach(c => {
+            if (c.id !== 'cart-empty-msg') c.remove();
+        });
+
+        if (cart.length === 0) {
+            if (emptyMsg) emptyMsg.style.display = 'flex';
+            const scrollFooter = document.getElementById('cart-scroll-footer');
+            if (scrollFooter) scrollFooter.style.display = 'none';
+            badge.style.display = 'none';
+            countText.innerText = '0 article';
+            totalEl.innerText = '0 FCFA';
+            validateBtn.disabled = true;
+            return;
+        }
+
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        const scrollFooter = document.getElementById('cart-scroll-footer');
+        if (scrollFooter) scrollFooter.style.display = 'block';
+        validateBtn.disabled = false;
+
+        let total = 0;
+        let count = 0;
+
+        cart.forEach((item, index) => {
+            const remiseVal = item.remise || 0;
+            const lineTotal = item.prix_vente * item.quantite * (1 - remiseVal / 100);
+            total += lineTotal;
+            count += item.quantite;
+
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+                <div>
+                    <h5 title="${item.nom}">${item.nom}</h5>
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.1rem;">
+                        <small>${new Intl.NumberFormat('fr-FR').format(item.prix_vente)} F/u</small>
+                        <div style="display:flex; align-items:center; gap:2px; background:rgba(255,255,255,0.04); border:1px solid var(--border-color); border-radius:4px; padding:0 3px;">
+                            <input type="number" min="0" max="100" value="${remiseVal}" 
+                                   oninput="changeCartRemise(${index}, this.value)" 
+                                   style="width:32px; background:transparent; border:none; color:white; font-size:0.7rem; padding:0; text-align:center; outline:none;"
+                                   placeholder="0"><span style="font-size:0.65rem; color:var(--text-muted);">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="cart-item-qty">
+                    <button onclick="changeCartQty(${index}, -1)">−</button>
+                    <span>${item.quantite}</span>
+                    <button onclick="changeCartQty(${index}, 1)">+</button>
+                </div>
+                <div class="cart-item-total">${new Intl.NumberFormat('fr-FR').format(lineTotal)} F</div>
+                <button class="cart-item-remove" onclick="removeFromCart(${index})" title="Retirer"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            container.insertBefore(div, emptyMsg);
+        });
+
+        badge.innerText = count;
+        badge.style.display = 'inline-block';
+        countText.innerText = `${count} article${count > 1 ? 's' : ''}`;
+        totalEl.innerText = new Intl.NumberFormat('fr-FR').format(total) + ' FCFA';
+    }
+
+    function openPOSBarcodeScan() {
+        document.getElementById('pos-barcode-modal').classList.add('active');
+        const input = document.getElementById('pos-scan-code');
+        input.value = '';
+        setTimeout(() => input.focus(), 300);
+    }
+
+    function closePOSBarcode() {
+        document.getElementById('pos-barcode-modal').classList.remove('active');
+    }
+
+    function processPOSBarcodeScan() {
+        const code = document.getElementById('pos-scan-code').value.trim();
+        if (!code) return;
+
+        const product = posCatalog.find(p => p.code === code);
+        if (product) {
+            addToCart(product.id);
+            closePOSBarcode();
+        } else {
+            showToast("Médicament non trouvé ou code incorrect", "danger");
+        }
+    }
+
+    document.getElementById('pos-scan-code').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            processPOSBarcodeScan();
+        }
+    });
+
+    function validatePOSSale() {
+        if (cart.length === 0) {
+            showToast('Le panier est vide', 'warning');
+            return;
+        }
+
+        const modePaiement = document.getElementById('pos-payment-method').value;
+        const clientNom = document.getElementById('pos-client-name').value.trim() || 'Passant';
+        const clientAdresse = document.getElementById('pos-client-adresse').value.trim();
+        const clientAge = document.getElementById('pos-client-age').value.trim();
+        const clientTelephone = document.getElementById('pos-client-telephone').value.trim();
+
+        const payload = {
+            lignes: cart,
+            mode_paiement: modePaiement,
+            client_nom: clientNom,
+            client_adresse: clientAdresse,
+            client_age: clientAge || null,
+            client_telephone: clientTelephone
+        };
+
+        fetch('/api/ventes/creer/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Vente enregistrée avec succès !');
+                showReceipt(data.vente_id);
+                cart = [];
+                // Remettre à zéro les champs client après la vente
+                document.getElementById('pos-client-name').value = 'Passant';
+                document.getElementById('pos-client-adresse').value = '';
+                document.getElementById('pos-client-age').value = '';
+                document.getElementById('pos-client-telephone').value = '';
+                document.getElementById('pos-client-summary').innerText = 'Passant';
+                document.getElementById('client-info-form').classList.remove('open');
+                document.getElementById('client-toggle-icon').style.transform = 'rotate(0deg)';
+                renderCart();
+                loadPOSCatalog(); // Recharger pour avoir les stocks à jour
+                updateHistoryBadge(); // Mettre à jour le badge d'historique
+                if (document.getElementById('history-scroll-body').style.display !== 'none') {
+                    loadDailyHistory(); // Recharger si l'onglet historique est actif
+                }
+            } else {
+                showToast(data.error || 'Erreur lors de la vente', 'danger');
+            }
+        });
+    }
+
+
+    function showReceipt(venteId) {
+        fetch(`/facture/${venteId}/print/`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('facture-print-body').innerHTML = html;
+                document.getElementById('facture-modal').classList.add('active');
+            });
+    }
+
+    function closeFactureModal() {
+        document.getElementById('facture-modal').classList.remove('active');
+    }
+
+    function printReceipt() {
+        const printContent = document.getElementById('facture-print-body').innerHTML;
+
+        // Ouvrir une fenêtre d'impression épurée
+        const popup = window.open('', '_blank', 'width=450,height=650');
+        popup.document.write(`
+            <html>
+                <head>
+                    <title>Impression Facture</title>
+                    <style>
+                        @page {
+                            margin: 5mm;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            background: #fff;
+                            color: #000;
+                        }
+                    </style>
+                </head>
+                <body onload="window.print(); setTimeout(() => { window.close(); }, 500);">
+                    ${printContent}
+                </body>
+            </html>
+        `);
+        popup.document.close();
+    }
+
+    // Synchronisation automatique en arrière-plan pour le multi-postes
+    function syncPOSCatalog() {
+        fetch('/api/medicaments/')
+            .then(res => res.json())
+            .then(data => {
+                posCatalog = data.medicaments;
+                
+                let cartUpdated = false;
+                // Parcourir le panier à l'envers pour pouvoir supprimer des éléments en toute sécurité
+                for (let i = cart.length - 1; i >= 0; i--) {
+                    const item = cart[i];
+                    const freshProd = posCatalog.find(p => p.id === item.medicament_id);
+                    
+                    if (!freshProd || freshProd.statut === 'Expiré') {
+                        cart.splice(i, 1);
+                        showToast(`Le produit "${item.nom}" n'est plus disponible à la vente. Retiré du panier.`, 'warning');
+                        cartUpdated = true;
+                    } else if (freshProd.stock < item.quantite) {
+                        if (freshProd.stock <= 0) {
+                            cart.splice(i, 1);
+                            showToast(`Le produit "${item.nom}" est désormais en rupture de stock. Retiré du panier.`, 'warning');
+                        } else {
+                            item.quantite = freshProd.stock;
+                            item.stock = freshProd.stock;
+                            showToast(`La quantité pour "${item.nom}" a été ramenée à ${freshProd.stock} (limite de stock atteinte).`, 'warning');
+                        }
+                        cartUpdated = true;
+                    } else {
+                        item.stock = freshProd.stock; // Mettre à jour la limite maximale de stock du panier
+                    }
+                }
+                
+                if (cartUpdated) {
+                    renderCart();
+                }
+                
+                // Mettre à jour la grille de produits à l'écran sans perturber le champ de recherche
+                searchPOSMedicaments();
+            });
+    }
+
+    // Contrôle d'affichage du formulaire client
+    function toggleClientInfo() {
+        const form = document.getElementById('client-info-form');
+        const icon = document.getElementById('client-toggle-icon');
+        const isOpen = form.classList.toggle('open');
+        icon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        
+        if (isOpen) {
+            setTimeout(() => {
+                const scrollBody = document.getElementById('cart-scroll-body');
+                if (scrollBody) {
+                    scrollBody.scrollTo({
+                        top: scrollBody.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 150); // Attendre la transition CSS max-height
+        }
+    }
+
+    function updateClientSummary() {
+        const nameInput = document.getElementById('pos-client-name').value.trim();
+        const summarySpan = document.getElementById('pos-client-summary');
+        summarySpan.innerText = nameInput || 'Passant';
+    }
+
+    // ─── Gestion des Onglets et de l'Historique du Jour ─────────────────────
+    function switchCartTab(tab) {
+        const cartBody = document.getElementById('cart-scroll-body');
+        const historyBody = document.getElementById('history-scroll-body');
+        const cartFooter = document.getElementById('cart-footer-container');
+        const tabCartBtn = document.getElementById('tab-cart-btn');
+        const tabHistoryBtn = document.getElementById('tab-history-btn');
+
+        if (tab === 'cart') {
+            cartBody.style.display = 'block';
+            historyBody.style.display = 'none';
+            if (cartFooter) cartFooter.style.display = 'block';
+            tabCartBtn.classList.add('active');
+            tabHistoryBtn.classList.remove('active');
+        } else {
+            cartBody.style.display = 'none';
+            historyBody.style.display = 'flex';
+            if (cartFooter) cartFooter.style.display = 'none';
+            tabCartBtn.classList.remove('active');
+            tabHistoryBtn.classList.add('active');
+            loadDailyHistory();
+        }
+    }
+
+    let dailyVentes = [];
+    function loadDailyHistory() {
+        fetch('/api/ventes/historique/?periode=jour')
+            .then(res => res.json())
+            .then(data => {
+                dailyVentes = data.ventes;
+                renderDailyHistory();
+            });
+    }
+
+    function renderDailyHistory() {
+        const container = document.getElementById('history-items-container');
+        container.innerHTML = '';
+        
+        if (dailyVentes.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;color:var(--text-muted);padding:3rem;">
+                    <i class="fa-solid fa-clock-rotate-left" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.75rem;"></i>
+                    Aucune vente aujourd'hui
+                </div>`;
+            return;
+        }
+        
+        dailyVentes.forEach(vente => {
+            const card = document.createElement('div');
+            card.style.background = 'var(--bg-input)';
+            card.style.border = '1px solid ' + (vente.est_annulee ? 'rgba(239, 68, 68, 0.2)' : 'var(--border-color)');
+            card.style.borderRadius = '12px';
+            card.style.padding = '0.75rem';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.gap = '0.5rem';
+            card.style.transition = 'all 0.2s';
+            
+            if (vente.est_annulee) {
+                card.style.opacity = '0.7';
+            }
+            
+            let actionBtn = '';
+            if (!vente.est_annulee) {
+                actionBtn = `
+                    <button class="btn btn-secondary" onclick="confirmCancelSale(${vente.id}, '${vente.numero_facture}')" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; color: var(--color-danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);" title="Annuler la vente">
+                        <i class="fa-solid fa-ban"></i> Annuler
+                    </button>
+                `;
+            }
+            
+            let linesHtml = vente.lignes.map(l => `
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-secondary); margin-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px;">
+                    <span>${l.medicament_nom} x${l.quantite}</span>
+                    <span>${new Intl.NumberFormat('fr-FR').format(l.total)} F</span>
+                </div>
+            `).join('');
+            
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:700; color:var(--color-primary);">${vente.numero_facture.split('-')[2] ? 'N°' + vente.numero_facture.split('-')[2] : vente.numero_facture}</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">${vente.date_vente.split(' ')[1]}</span>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <div>
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${vente.client_nom}</div>
+                        <div style="font-size:0.72rem; color:var(--text-muted);">${vente.mode_paiement}</div>
+                    </div>
+                    <div style="font-size:0.95rem; font-weight:800; color:${vente.est_annulee ? 'var(--color-danger)' : 'var(--color-success)'};">
+                        ${new Intl.NumberFormat('fr-FR').format(vente.total)} F
+                    </div>
+                </div>
+                
+                <div class="vente-detail-items" style="border-top:1px dashed var(--border-color); padding-top:0.4rem; margin-top:0.2rem; display:none;">
+                    ${linesHtml}
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:0.4rem; margin-top:0.1rem;">
+                    <button class="btn btn-secondary" onclick="toggleVenteDetails(this)" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; border:none; background:transparent; color:var(--text-muted);">
+                        <i class="fa-solid fa-angle-down"></i> Détails
+                    </button>
+                    <div style="display:flex; gap:0.35rem;">
+                        <button class="btn btn-secondary" onclick="showReceipt(${vente.id})" style="padding: 0.25rem 0.5rem; font-size: 0.72rem;" title="Imprimer">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
+                        ${actionBtn}
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function toggleVenteDetails(btn) {
+        const card = btn.closest('div').parentElement;
+        const details = card.querySelector('.vente-detail-items');
+        const icon = btn.querySelector('i');
+        
+        if (details.style.display === 'none') {
+            details.style.display = 'block';
+            icon.className = 'fa-solid fa-angle-up';
+        } else {
+            details.style.display = 'none';
+            icon.className = 'fa-solid fa-angle-down';
+        }
+    }
+
+    let saleIdToCancel = null;
+
+    function confirmCancelSale(venteId, numFacture) {
+        saleIdToCancel = venteId;
+        const numSpan = document.getElementById('cancel-invoice-num');
+        if (numSpan) {
+            numSpan.innerText = numFacture;
+        }
+        const modal = document.getElementById('confirm-cancel-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
+    function closeCancelSaleModal() {
+        const modal = document.getElementById('confirm-cancel-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        saleIdToCancel = null;
+    }
+
+    function cancelSale(venteId) {
+        fetch(`/api/ventes/${venteId}/annuler/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Vente annulée avec succès');
+                loadDailyHistory();
+                updateHistoryBadge();
+                loadPOSCatalog();
+            } else {
+                showToast(data.error || "Erreur lors de l'annulation", 'danger');
+            }
+        })
+        .catch(err => {
+            showToast("Erreur réseau lors de l'annulation", 'danger');
+        });
+    }
+
+    function updateHistoryBadge() {
+        fetch('/api/ventes/historique/?periode=jour')
+            .then(res => res.json())
+            .then(data => {
+                const badge = document.getElementById('pos-history-count-badge');
+                const count = data.ventes.length;
+                if (count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+    }
+
+    // Chargement initial
+    loadPOSCatalog();
+    updateHistoryBadge();
+    
+    // Configurer le bouton de confirmation d'annulation de facture
+    const confirmCancelBtn = document.getElementById('btn-confirm-cancel-execute');
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', function() {
+            if (saleIdToCancel) {
+                cancelSale(saleIdToCancel);
+                closeCancelSaleModal();
+            }
+        });
+    }
+    
+    // Synchronisation périodique toutes les 15 secondes
+    setInterval(syncPOSCatalog, 15000);
+</script>
+{% endblock %}

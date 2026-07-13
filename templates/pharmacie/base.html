@@ -1,0 +1,397 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Désactiver le cache navigateur pour toujours voir les dernières modifications -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{% block title %}Logiciel de Gestion Pharmaceutique — Clinique Tounkara{% endblock %}</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style (cache-busting automatique via timestamp) -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v={% now "U" %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-prescription-bottle-medical"></i>
+                </div>
+                <div class="logo-title">
+                    <h1>PharmaTounkara</h1>
+                    <span>Clinique Tounkara</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                {% if request.user.is_superuser or request.user.last_name == 'admin' or request.user.last_name != 'caissier' %}
+                <a href="{% url 'dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+                <a href="{% url 'liste_medicaments' %}" class="menu-item {% if request.resolver_match.url_name == 'liste_medicaments' %}active{% endif %}">
+                    <i class="fa-solid fa-capsules"></i>
+                    <span class="menu-text">Médicaments</span>
+                </a>
+                <a href="{% url 'gestion_stocks' %}" class="menu-item {% if request.resolver_match.url_name == 'gestion_stocks' %}active{% endif %}">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span class="menu-text">Stocks</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'gestion_ventes' %}" class="menu-item {% if request.resolver_match.url_name == 'gestion_ventes' %}active{% endif %}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="menu-text">Vente Rapide</span>
+                </a>
+                {% if request.user.is_superuser or request.user.last_name == 'admin' or request.user.last_name != 'caissier' %}
+                <a href="{% url 'alertes_page' %}" class="menu-item {% if request.resolver_match.url_name == 'alertes_page' %}active{% endif %}" style="position: relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="menu-text">Alertes</span>
+                    <span class="badge" id="sidebar-alert-badge" style="display: none;">0</span>
+                </a>
+                <a href="{% url 'gestion_fournisseurs' %}" class="menu-item {% if request.resolver_match.url_name == 'gestion_fournisseurs' %}active{% endif %}">
+                    <i class="fa-solid fa-truck-field"></i>
+                    <span class="menu-text">Fournisseurs</span>
+                </a>
+                <a href="{% url 'rapports_page' %}" class="menu-item {% if request.resolver_match.url_name == 'rapports_page' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span class="menu-text">Rapports</span>
+                </a>
+                {% endif %}
+                {% if request.user.is_superuser %}
+                <a href="{% url 'utilisateurs_page' %}" class="menu-item {% if request.resolver_match.url_name == 'utilisateurs_page' %}active{% endif %}">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span class="menu-text">Utilisateurs</span>
+                </a>
+                {% endif %}
+                
+                <div style="flex-grow: 1;"></div>
+                
+                <a href="{% url 'logout' %}" class="menu-item" style="color: var(--color-danger); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.75rem; margin-top: 0.5rem; border-radius: 0;">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span class="menu-text">Déconnexion</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Workspace (Header + Content) -->
+        <div class="main-workspace">
+            <header class="top-header">
+                <button class="mobile-hamburger-btn" onclick="toggleSidebar()" id="mobile-hamburger-btn" title="Ouvrir le menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="search-bar-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="global-search-input" class="global-search" placeholder="Recherche globale (ex: Paracétamol, Doliprane, Code-barres...)" autocomplete="off">
+                    <div id="global-search-results" class="global-search-results"></div>
+                </div>
+
+                <div class="navbar-right">
+                    <div id="connexion-status" style="font-size: 0.8rem; color: var(--color-success);">
+                        <i class="fa-solid fa-circle-dot"></i> Multi-postes Synced
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.is_superuser %}
+                                    SA
+                                {% else %}
+                                    {{ request.user.first_name|slice:":2"|upper|default:"CT" }}
+                                {% endif %}
+                            {% else %}
+                                CT
+                            {% endif %}
+                        </div>
+                        <div class="user-info">
+                            <span>
+                                {% if request.user.is_authenticated %}
+                                    {{ request.user.first_name|default:request.user.username }}
+                                {% else %}
+                                    Visiteur
+                                {% endif %}
+                            </span>
+                            <span class="role">
+                                {% if request.user.is_superuser %}
+                                    Super-Admin
+                                {% elif request.user.last_name == 'caissier' %}
+                                    Caissier
+                                {% elif request.user.last_name == 'admin' %}
+                                    Admin
+                                {% else %}
+                                    Pharmacie
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Page Specific Content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Floating notifications container -->
+    <div class="notifications-container" id="toast-container"></div>
+
+    <!-- Modal global de détail médicament (barre de recherche / scan code-barres) -->
+    <div class="modal" id="global-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-drug-title">Détails Médicament</h3>
+                <button class="modal-close" onclick="closeGlobalDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Code médicament / Code-barres</label>
+                        <input type="text" id="modal-drug-code" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom du médicament</label>
+                        <input type="text" id="modal-drug-name" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Catégorie</label>
+                        <input type="text" id="modal-drug-cat" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock disponible</label>
+                        <input type="text" id="modal-drug-stock" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Prix d'achat</label>
+                        <input type="text" id="modal-drug-prix-achat" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Prix de vente</label>
+                        <input type="text" id="modal-drug-prix-vente" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'expiration</label>
+                        <input type="text" id="modal-drug-date-exp" class="input-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Fournisseur</label>
+                        <input type="text" id="modal-drug-fourn" class="input-control" readonly>
+                    </div>
+                    <div class="form-group-full">
+                        <label>Statut</label>
+                        <div id="modal-drug-statut-badge" style="margin-top: 5px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGlobalDetailsModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de base -->
+    <script>
+        // Token CSRF Django global pour toutes les requêtes POST AJAX
+        const csrfToken = '{{ csrf_token }}';
+
+        // Système d'affichage de Toasts (Alertes volantes)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-check-circle';
+            if (type === 'warning') icon = 'fa-exclamation-triangle';
+            if (type === 'danger') icon = 'fa-times-circle';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // --- Barre de recherche globale ---
+        const searchInput = document.getElementById('global-search-input');
+        const searchResults = document.getElementById('global-search-results');
+
+        searchInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val.length < 2) {
+                searchResults.classList.remove('active');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            fetch(`/api/medicaments/?q=${encodeURIComponent(val)}`)
+                .then(res => res.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    if (data.medicaments.length === 0) {
+                        searchResults.innerHTML = '<div class="search-result-item">Aucun médicament trouvé</div>';
+                        searchResults.classList.add('active');
+                        return;
+                    }
+
+                    data.medicaments.forEach(med => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.innerHTML = `
+                            <h4>
+                                <span>${med.nom}</span>
+                                <span style="color: var(--color-primary);">${med.prix_vente} FCFA</span>
+                            </h4>
+                            <p>Code: ${med.code} | Stock: ${med.stock} | Exp: ${med.date_expiration} (${med.statut})</p>
+                        `;
+                        div.addEventListener('click', () => {
+                            showDrugGlobalDetails(med);
+                            searchResults.classList.remove('active');
+                            searchInput.value = '';
+                        });
+                        searchResults.appendChild(div);
+                    });
+                    searchResults.classList.add('active');
+                });
+        });
+
+        // Fermer la recherche si on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        function showDrugGlobalDetails(med) {
+            document.getElementById('modal-drug-title').innerText = med.nom;
+            document.getElementById('modal-drug-code').value = med.code;
+            document.getElementById('modal-drug-name').value = med.nom;
+            document.getElementById('modal-drug-cat').value = med.categorie;
+            document.getElementById('modal-drug-stock').value = med.stock + " unités";
+            document.getElementById('modal-drug-prix-achat').value = med.prix_achat + " FCFA";
+            document.getElementById('modal-drug-prix-vente').value = med.prix_vente + " FCFA";
+            
+            // Calculer la date au format local
+            const expDate = new Date(med.date_expiration);
+            document.getElementById('modal-drug-date-exp').value = expDate.toLocaleDateString('fr-FR');
+            document.getElementById('modal-drug-fourn').value = med.fournisseur_nom;
+            
+            const badge = document.getElementById('modal-drug-statut-badge');
+            badge.className = '';
+            if (med.statut === 'Disponible') {
+                badge.className = 'badge-status badge-dispo';
+                badge.innerText = 'Disponible';
+            } else if (med.statut === 'Stock faible') {
+                badge.className = 'badge-status badge-faible';
+                badge.innerText = 'Stock Faible';
+            } else if (med.statut === 'Rupture') {
+                badge.className = 'badge-status badge-expire';
+                badge.innerText = 'En Rupture';
+            } else {
+                badge.className = 'badge-status badge-expire';
+                badge.innerText = 'Expiré';
+            }
+
+            document.getElementById('global-details-modal').classList.add('active');
+        }
+
+        function closeGlobalDetailsModal() {
+            document.getElementById('global-details-modal').classList.remove('active');
+        }
+
+        // Mettre à jour le badge d'alerte dans la sidebar périodiquement
+        function updateAlertBadge() {
+            fetch('/api/medicaments/')
+                .then(res => res.json())
+                .then(data => {
+                    let totalAlertes = 0;
+                    data.medicaments.forEach(med => {
+                        if (med.statut === 'Stock faible' || med.statut === 'Expiré' || med.statut === 'Rupture') {
+                            totalAlertes++;
+                        }
+                    });
+                    const badge = document.getElementById('sidebar-alert-badge');
+                    if (totalAlertes > 0) {
+                        badge.innerText = totalAlertes;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+        }
+        
+        // Exécuter l'update au chargement et toutes les 10 secondes (sync multi-postes)
+        updateAlertBadge();
+        setInterval(updateAlertBadge, 10000);
+
+        // Charger les informations de l'utilisateur connecté
+        function loadCurrentUser() {
+            fetch('/api/me/')
+                .then(res => {
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = '/login/';
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(user => {
+                    if (!user) return;
+                    
+                    const avatarEl = document.querySelector('.user-avatar');
+                    if (avatarEl) {
+                        avatarEl.textContent = user.initials || 'U';
+                    }
+                    
+                    const userInfoEl = document.querySelector('.user-info');
+                    if (userInfoEl) {
+                        const nameSpan = userInfoEl.querySelector('span:not(.role)');
+                        const roleSpan = userInfoEl.querySelector('span.role');
+                        if (nameSpan) nameSpan.textContent = user.display_name;
+                        if (roleSpan) {
+                            let roleText = 'Pharmacie';
+                            if (user.role === 'superadmin') roleText = 'Super-Admin';
+                            else if (user.role === 'admin') roleText = 'Admin';
+                            else if (user.role === 'caissier') roleText = 'Caissier';
+                            roleSpan.textContent = roleText;
+                        }
+                    }
+                })
+                .catch(err => console.error("Erreur lors de la récupération des infos utilisateur:", err));
+        }
+
+        // Appeler au chargement
+        document.addEventListener('DOMContentLoaded', loadCurrentUser);
+
+        // Toggle pour la Sidebar (menu tiroir glissant)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            if (!sidebar || !backdrop) return;
+            const isOpen = sidebar.classList.toggle('mobile-open');
+            if (isOpen) {
+                backdrop.classList.add('active');
+            } else {
+                backdrop.classList.remove('active');
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+    {% block extra_html %}{% endblock %}
+    <div class="mobile-sidebar-backdrop" id="mobile-sidebar-backdrop" onclick="toggleSidebar()"></div>
+</body>
+</html>

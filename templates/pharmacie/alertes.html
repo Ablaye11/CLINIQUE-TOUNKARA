@@ -1,0 +1,149 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Alertes et Expirations — Clinique Tounkara{% endblock %}
+
+{% block content %}
+<div class="table-header">
+    <div>
+        <h2>Alertes Intelligentes</h2>
+        <p style="color: var(--text-secondary);">Médicaments en rupture de stock, stock faible et proches de l'expiration</p>
+    </div>
+</div>
+
+<div class="grid-split-2">
+    
+    <!-- Left Pane: Stock Alerts (Rupture / Faible) -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--color-danger);"></i> Anomalies de Stock</h3>
+        
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button class="btn btn-primary" id="btn-alert-rupture" onclick="toggleStockAlertTab('rupture')">Ruptures de Stock</button>
+            <button class="btn btn-secondary" id="btn-alert-faible" onclick="toggleStockAlertTab('faible')">Stocks Faibles</button>
+        </div>
+
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Médicament</th>
+                        <th style="text-align: center;">Stock Actuel</th>
+                        <th style="text-align: center;">Seuil Min</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-alerts-tbody">
+                    <!-- JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right Pane: Expirations (30 / 60 / 90 jours / Expirés) -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-hourglass-half" style="color: var(--color-warning);"></i> Suivi des Expirations</h3>
+        
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="btn-exp-deja" onclick="toggleExpTab('expired')">Expirés</button>
+            <button class="btn btn-secondary" id="btn-exp-30" onclick="toggleExpTab('proche')">30 jours</button>
+            <button class="btn btn-secondary" id="btn-exp-60" onclick="toggleExpTab('60')">60 jours</button>
+            <button class="btn btn-secondary" id="btn-exp-90" onclick="toggleExpTab('90')">90 jours</button>
+        </div>
+
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Médicament</th>
+                        <th>Date Expiration</th>
+                        <th style="text-align: center;">Jours Restants</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="exp-alerts-tbody">
+                    <!-- JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeStockTab = 'rupture'; // 'rupture' ou 'faible'
+    let activeExpTab = 'expired'; // 'expired', 'proche', '60', '90'
+
+    function loadAlerts() {
+        // --- 1. Load Stock alerts ---
+        fetch(`/api/medicaments/`)
+            .then(res => res.json())
+            .then(data => {
+                const stockTbody = document.getElementById('stock-alerts-tbody');
+                stockTbody.innerHTML = '';
+
+                // Filtrer selon l'onglet actif
+                const filteredStock = data.medicaments.filter(med => {
+                    if (activeStockTab === 'rupture') {
+                        return med.statut === 'Rupture';
+                    } else {
+                        return med.statut === 'Stock faible';
+                    }
+                });
+
+                if (filteredStock.length === 0) {
+                    stockTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun produit dans cette catégorie</td></tr>`;
+                } else {
+                    filteredStock.forEach(med => {
+                        const tr = document.createElement('tr');
+                        const isRupture = med.statut === 'Rupture';
+                        tr.innerHTML = `<td style="font-family: monospace;">${med.code}</td><td><strong>${med.nom}</strong><small style="color: var(--text-muted); display: block;">${med.categorie}</small></td><td style="text-align: center; font-weight: bold; color: ${isRupture ? 'var(--color-danger)' : 'var(--color-warning)'};">${med.stock}</td><td style="text-align: center;">${med.stock_minimum}</td><td><span class="badge-status ${isRupture ? 'badge-expire' : 'badge-faible'}">${med.statut}</span></td>`;
+                        stockTbody.appendChild(tr);
+                    });
+                }
+            });
+
+        // --- 2. Load Expiration alerts ---
+        fetch(`/api/medicaments/?exp=${activeExpTab}`)
+            .then(res => res.json())
+            .then(data => {
+                const expTbody = document.getElementById('exp-alerts-tbody');
+                expTbody.innerHTML = '';
+
+                if (data.medicaments.length === 0) {
+                    expTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun produit ne correspond à ce critère d'expiration</td></tr>`;
+                } else {
+                    data.medicaments.forEach(med => {
+                        const tr = document.createElement('tr');
+                        const isExpired = med.jours_avant_expiration <= 0;
+                        const restants = isExpired ? 'Dépassé' : `${med.jours_avant_expiration} jours`;
+                        
+                        tr.innerHTML = `<td style="font-family: monospace;">${med.code}</td><td><strong>${med.nom}</strong><small style="color: var(--text-muted); display: block;">${med.categorie}</small></td><td style="font-weight: 500;">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td><td style="text-align: center; font-weight: bold; color: ${isExpired ? 'var(--color-danger)' : 'var(--color-warning)'};">${restants}</td><td><span class="badge-status ${isExpired ? 'badge-expire' : 'badge-faible'}">${med.statut}</span></td>`;
+                        expTbody.appendChild(tr);
+                    });
+                }
+            });
+    }
+
+    function toggleStockAlertTab(tab) {
+        activeStockTab = tab;
+        document.getElementById('btn-alert-rupture').className = tab === 'rupture' ? 'btn btn-primary' : 'btn btn-secondary';
+        document.getElementById('btn-alert-faible').className = tab === 'faible' ? 'btn btn-primary' : 'btn btn-secondary';
+        loadAlerts();
+    }
+
+    function toggleExpTab(tab) {
+        activeExpTab = tab;
+        document.getElementById('btn-exp-deja').className = tab === 'expired' ? 'btn btn-primary' : 'btn btn-secondary';
+        document.getElementById('btn-exp-30').className = tab === 'proche' ? 'btn btn-primary' : 'btn btn-secondary';
+        document.getElementById('btn-exp-60').className = tab === '60' ? 'btn btn-primary' : 'btn btn-secondary';
+        document.getElementById('btn-exp-90').className = tab === '90' ? 'btn btn-primary' : 'btn btn-secondary';
+        loadAlerts();
+    }
+
+    // Chargement initial
+    loadAlerts();
+</script>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Gestion des Fournisseurs — Clinique Tounkara{% endblock %}
+
+{% block content %}
+<div class="table-header">
+    <div>
+        <h2>Gestion des Fournisseurs</h2>
+        <p style="color: var(--text-secondary);">Liste des fournisseurs de la pharmacie, coordonnées et articles livrés</p>
+    </div>
+    <div class="table-actions">
+        <button class="btn btn-primary" onclick="openAddFournisseurModal()">
+            <i class="fa-solid fa-plus"></i> Nouveau Fournisseur
+        </button>
+    </div>
+</div>
+
+<div class="grid-split-2-1">
+    
+    <!-- Suppliers List -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-list-check" style="color: var(--color-primary);"></i> Liste des Fournisseurs</h3>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Téléphone</th>
+                        <th>Email</th>
+                        <th>Adresse / Coordonnées</th>
+                        <th style="text-align: center;">Médicaments liés</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="fournisseurs-tbody">
+                    <!-- JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right pane: Supplier details view -->
+    <div class="chart-card" id="fournisseur-info-card" style="display: flex; flex-direction: column;">
+        <h3><i class="fa-solid fa-circle-info" style="color: var(--color-success);"></i> Médicaments fournis</h3>
+        <div id="supplied-meds-list" style="flex-grow: 1; overflow-y: auto; max-height: 400px; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="text-align: center; color: var(--text-muted); margin-top: 4rem;">
+                <i class="fa-solid fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                Sélectionnez un fournisseur pour voir sa liste
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajout/Modification Fournisseur -->
+<div class="modal" id="fournisseur-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="fourn-modal-title">Nouveau Fournisseur</h3>
+            <button class="modal-close" onclick="closeFournModal()">&times;</button>
+        </div>
+        <form id="fourn-form" onsubmit="saveFournisseur(event)">
+            <div class="modal-body">
+                <input type="hidden" id="fourn-id">
+                <div class="form-grid">
+                    <div class="form-group form-group-full">
+                        <label>Nom du fournisseur *</label>
+                        <input type="text" id="fourn-nom" class="input-control" required placeholder="ex: Pharmacie Nationale d'Approvisionnement (PNA)">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="text" id="fourn-tel" class="input-control" placeholder="ex: +221 77 000 00 00">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="fourn-email" class="input-control" placeholder="ex: contact@fournisseur.com">
+                    </div>
+                    <div class="form-group form-group-full">
+                        <label>Adresse complète / Remarques</label>
+                        <textarea id="fourn-adresse" class="input-control" rows="3" placeholder="Saisir l'adresse de livraison ou facturation..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeFournModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let fournisseurs = [];
+
+    function loadFournisseurs() {
+        fetch('/api/fournisseurs/')
+            .then(res => res.json())
+            .then(data => {
+                fournisseurs = data.fournisseurs;
+                renderFournisseurs();
+            });
+    }
+
+    function renderFournisseurs() {
+        const tbody = document.getElementById('fournisseurs-tbody');
+        tbody.innerHTML = '';
+
+        if (fournisseurs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun fournisseur enregistré</td></tr>`;
+            return;
+        }
+
+        fournisseurs.forEach(f => {
+            const tr = document.createElement('tr');
+            tr.style.cursor = 'pointer';
+            tr.innerHTML = `<td><strong>${f.nom}</strong></td><td>${f.telephone}</td><td>${f.email}</td><td style="color: var(--text-secondary); font-size: 0.85rem;">${f.adresse}</td><td style="text-align: center; font-weight: bold;">${f.nb_produits}</td><td style="text-align: right;"><div style="display: flex; gap: 0.4rem; justify-content: flex-end;"><button class="btn-action-icon edit" onclick="editFournisseur(${JSON.stringify(f).replace(/"/g, '&quot;')}); event.stopPropagation();" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn-action-icon delete" onclick="deleteFournisseur(${f.id}, '${f.nom.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
+            tr.addEventListener('click', () => showSuppliedMeds(f));
+            tbody.appendChild(tr);
+        });
+    }
+
+    function showSuppliedMeds(fourn) {
+        document.getElementById('fournisseur-info-card').querySelector('h3').innerHTML = `
+            <i class="fa-solid fa-prescription-bottle-medical" style="color: var(--color-success);"></i> Médicaments de : ${fourn.nom}
+        `;
+        
+        // Fetch all drugs and filter by this supplier
+        fetch(`/api/medicaments/`)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('supplied-meds-list');
+                list.innerHTML = '';
+                
+                const filtered = data.medicaments.filter(m => m.fournisseur_id === fourn.id);
+                
+                if (filtered.length === 0) {
+                    list.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin-top: 4rem;">Aucun médicament associé à ce fournisseur</div>`;
+                    return;
+                }
+
+                filtered.forEach(med => {
+                    const item = document.createElement('div');
+                    item.style.padding = '0.75rem';
+                    item.style.background = 'var(--bg-input)';
+                    item.style.borderRadius = '8px';
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.style.alignItems = 'center';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <h5 style="margin: 0; font-size: 0.9rem;">${med.nom}</h5>
+                            <small style="color: var(--text-muted);">Stock dispo: ${med.stock} | Cat: ${med.categorie}</small>
+                        </div>
+                        <span style="font-weight: bold; color: var(--color-primary);">${med.prix_vente} F</span>
+                    `;
+                    list.appendChild(item);
+                });
+            });
+    }
+
+    function openAddFournisseurModal() {
+        document.getElementById('fourn-modal-title').innerText = 'Nouveau Fournisseur';
+        document.getElementById('fourn-form').reset();
+        document.getElementById('fourn-id').value = '';
+        document.getElementById('fournisseur-modal').classList.add('active');
+    }
+
+    function editFournisseur(f) {
+        document.getElementById('fourn-modal-title').innerText = 'Modifier Fournisseur';
+        document.getElementById('fourn-id').value = f.id;
+        document.getElementById('fourn-nom').value = f.nom;
+        document.getElementById('fourn-tel').value = f.telephone === '-' ? '' : f.telephone;
+        document.getElementById('fourn-email').value = f.email === '-' ? '' : f.email;
+        document.getElementById('fourn-adresse').value = f.adresse === '-' ? '' : f.adresse;
+
+        document.getElementById('fournisseur-modal').classList.add('active');
+    }
+
+    function closeFournModal() {
+        document.getElementById('fournisseur-modal').classList.remove('active');
+    }
+
+    function saveFournisseur(event) {
+        event.preventDefault();
+        const payload = {
+            id: document.getElementById('fourn-id').value || null,
+            nom: document.getElementById('fourn-nom').value,
+            telephone: document.getElementById('fourn-tel').value,
+            email: document.getElementById('fourn-email').value,
+            adresse: document.getElementById('fourn-adresse').value
+        };
+
+        fetch('/api/fournisseurs/save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Fournisseur enregistré.');
+                closeFournModal();
+                loadFournisseurs();
+            } else {
+                showToast(data.error || 'Erreur', 'danger');
+            }
+        });
+    }
+
+    function deleteFournisseur(id, nom) {
+        if (confirm(`Voulez-vous vraiment supprimer le fournisseur "${nom}" ?`)) {
+            fetch(`/api/fournisseurs/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Fournisseur supprimé.');
+                    loadFournisseurs();
+                } else {
+                    showToast(data.error || 'Erreur', 'danger');
+                }
+            });
+        }
+    }
+
+    // Chargement initial
+    loadFournisseurs();
+</script>
+{% endblock %}

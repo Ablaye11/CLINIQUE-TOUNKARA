@@ -1,0 +1,159 @@
+<style>
+    .facture-container {
+        font-family: 'Courier New', Courier, monospace;
+        color: #000;
+        width: 100%;
+        max-width: 380px;
+        margin: 0 auto;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+    .facture-header {
+        text-align: center;
+        border-bottom: 2px dashed #000;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+    .facture-header h2 {
+        margin: 0 0 5px 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+    .facture-header p {
+        margin: 3px 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .facture-details {
+        font-size: 0.8rem;
+        line-height: 1.45;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #000;
+    }
+    .facture-details strong {
+        font-weight: 700;
+    }
+    .facture-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+        font-size: 0.8rem;
+    }
+    .facture-table th {
+        border-bottom: 2px solid #000;
+        padding: 6px 4px;
+        text-align: left;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+    .facture-table td {
+        padding: 6px 4px;
+        border-bottom: 1px dashed #ddd;
+        vertical-align: top;
+        font-size: 0.8rem;
+    }
+    .facture-table tr:last-child td {
+        border-bottom: 2px solid #000;
+    }
+    .facture-table .qty-col {
+        text-align: center;
+        width: 45px;
+    }
+    .facture-table .price-col {
+        text-align: right;
+        width: 90px;
+    }
+    .facture-total {
+        margin-top: 10px;
+        padding-top: 5px;
+        text-align: right;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-bottom: 2px dashed #000;
+        padding-bottom: 12px;
+        letter-spacing: -0.5px;
+    }
+    .facture-footer {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    .facture-footer p {
+        margin: 4px 0;
+    }
+    
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            color: #000;
+        }
+        .facture-container {
+            max-width: 100%;
+            width: 100%;
+            padding: 0;
+        }
+    }
+</style>
+
+<div class="facture-container">
+    <div class="facture-header">
+        <h2>CLINIQUE TOUNKARA</h2>
+        <p>Pharmacie de la Clinique</p>
+        <p>Dakar, Sénégal</p>
+        <p>Tél: +221 33 800 00 00</p>
+    </div>
+
+    <div class="facture-details">
+        <strong>Facture N°:</strong> {{ vente.numero_facture }}<br>
+        <strong>Date:</strong> {{ vente.date_vente|date:"d/m/Y H:i" }}<br>
+        <strong>Client:</strong> {{ vente.client_nom }}<br>
+        {% if vente.client_telephone %}
+            <strong>Tél Client:</strong> {{ vente.client_telephone }}<br>
+        {% endif %}
+        {% if vente.client_adresse %}
+            <strong>Adresse:</strong> {{ vente.client_adresse }}<br>
+        {% endif %}
+        {% if vente.client_age %}
+            <strong>Âge:</strong> {{ vente.client_age }}<br>
+        {% endif %}
+        <strong>Mode de paiement:</strong> {{ vente.get_mode_paiement_display }}<br>
+    </div>
+
+    <table class="facture-table">
+        <thead>
+            <tr>
+                <th>Désignation</th>
+                <th class="qty-col">Qté</th>
+                <th class="price-col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in vente.lignes.all %}
+            <tr>
+                <td>
+                    <div style="font-weight: bold;">{{ ligne.medicament.nom }}</div>
+                    <div style="font-size: 0.7rem; color: #555;">{{ ligne.prix_unitaire|floatformat:"0" }} F/u</div>
+                </td>
+                <td class="qty-col">{{ ligne.quantite }}</td>
+                <td class="price-col">{{ ligne.total|floatformat:"0" }} F</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="facture-total">
+        NET A PAYER: {{ vente.total|floatformat:"0" }} FCFA
+    </div>
+
+    <div class="facture-footer">
+        <p><strong>Merci pour votre confiance !</strong></p>
+        <p>Clinique Tounkara — Votre santé, notre priorité.</p>
+        <p style="font-size: 0.65rem; margin-top: 10px; opacity: 0.7;">Facture générée numériquement.</p>
+    </div>
+</div>

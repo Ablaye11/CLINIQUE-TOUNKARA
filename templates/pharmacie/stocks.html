@@ -1,0 +1,221 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Gestion des Stocks — Clinique Tounkara{% endblock %}
+
+{% block content %}
+<div class="table-header">
+    <div>
+        <h2>Mouvements et Gestion des Stocks</h2>
+        <p style="color: var(--text-secondary);">Entrées, sorties de stock, ajustements d'inventaire et historique</p>
+    </div>
+</div>
+
+<div class="grid-split-1-2">
+    
+    <!-- Mouvement Form -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-right-left" style="color: var(--color-primary);"></i> Nouveau Mouvement</h3>
+        <form id="stock-movement-form" onsubmit="saveStockMovement(event)">
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                
+                <div class="form-group">
+                    <label>Sélectionner le médicament *</label>
+                    <select id="mouv-medicament" class="input-control" required style="width: 100%;">
+                        <option value="">-- Choisir un médicament --</option>
+                        {% for med in medicaments %}
+                        <option value="{{ med.id }}">[{{ med.code }}] {{ med.nom }} (Actuel: {{ med.stock }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Type de mouvement *</label>
+                    <select id="mouv-type" class="input-control" required onchange="updateMotifSuggestions()">
+                        <option value="ENTREE">Entrée de stock (Réception / Achat)</option>
+                        <option value="SORTIE">Sortie de stock (Perte / Dispensation)</option>
+                        <option value="AJUSTEMENT">Ajustement d'inventaire (Correction physique)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Quantité *</label>
+                    <input type="number" id="mouv-quantite" class="input-control" min="1" required value="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Numéro de lot</label>
+                    <input type="text" id="mouv-lot" class="input-control" placeholder="ex: LOT-2026-A, etc. (optionnel)">
+                </div>
+
+                <div class="form-group">
+                    <label>Motif / Commentaire</label>
+                    <input type="text" id="mouv-motif" class="input-control" placeholder="ex: Réception commande grossiste, produit périmé, etc." list="motifs-suggestions">
+                    <datalist id="motifs-suggestions">
+                        <option value="Réception commande fournisseur">
+                        <option value="Ajustement inventaire annuel">
+                        <option value="Médicament endommagé / cassé">
+                        <option value="Produit périmé jeté">
+                    </datalist>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem;">
+                    <i class="fa-solid fa-circle-check"></i> Enregistrer le mouvement
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- History list -->
+    <div class="chart-card">
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--color-success);"></i> Historique des Mouvements</h3>
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
+            <input type="text" id="history-search" class="input-control" placeholder="Filtrer l'historique..." oninput="filterHistoryTable()" style="flex-grow: 1;">
+            <select id="history-type-filter" class="input-control" onchange="filterHistoryTable()">
+                <option value="">Tous les types</option>
+                <option value="ENTREE">Entrées</option>
+                <option value="SORTIE">Sorties</option>
+                <option value="AJUSTEMENT">Ajustements</option>
+            </select>
+        </div>
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Date & Heure</th>
+                        <th>Médicament</th>
+                        <th>Type</th>
+                        <th>N° Lot</th>
+                        <th style="text-align: center;">Quantité</th>
+                        <th>Motif</th>
+                    </tr>
+                </thead>
+                <tbody id="mouv-history-tbody">
+                    <!-- Rempli en JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let movementsData = [];
+
+    function updateMotifSuggestions() {
+        const type = document.getElementById('mouv-type').value;
+        const datalist = document.getElementById('motifs-suggestions');
+        datalist.innerHTML = '';
+
+        if (type === 'ENTREE') {
+            datalist.innerHTML = `
+                <option value="Réception de commande fournisseur">
+                <option value="Don / Échantillon médical reçu">
+                <option value="Retour de produit patient">
+            `;
+        } else if (type === 'SORTIE') {
+            datalist.innerHTML = `
+                <option value="Produit périmé jeté">
+                <option value="Médicament cassé / endommagé">
+                <option value="Vol / Perte constaté">
+                <option value="Donation / Utilisation clinique interne">
+            `;
+        } else {
+            datalist.innerHTML = `
+                <option value="Correction suite à inventaire physique">
+                <option value="Ajustement de stock de départ">
+            `;
+        }
+    }
+
+    function loadHistory() {
+        fetch('/api/stocks/historique/')
+            .then(res => res.json())
+            .then(data => {
+                movementsData = data.historique;
+                renderHistory(movementsData);
+            });
+    }
+
+    function renderHistory(items) {
+        const tbody = document.getElementById('mouv-history-tbody');
+        tbody.innerHTML = '';
+
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun mouvement de stock enregistré</td></tr>`;
+            return;
+        }
+
+        items.forEach(m => {
+            const tr = document.createElement('tr');
+            
+            let badgeClass = 'badge-dispo'; // green for Entry
+            let typeText = 'Entrée';
+            if (m.type_mouvement === 'SORTIE') {
+                badgeClass = 'badge-expire'; // red
+                typeText = 'Sortie';
+            } else if (m.type_mouvement === 'AJUSTEMENT') {
+                badgeClass = 'badge-faible'; // orange
+                typeText = 'Ajustement';
+            }
+
+            tr.innerHTML = `<td>${m.date_mouvement}</td><td><strong>${m.medicament_nom}</strong> <small style="color: var(--text-muted); display: block;">${m.medicament_code}</small></td><td><span class="badge-status ${badgeClass}">${typeText}</span></td><td style="font-family: monospace; font-size: 0.85rem;">${m.numero_lot || '-'}</td><td style="text-align: center; font-weight: bold;">${m.quantite}</td><td style="color: var(--text-secondary); font-size: 0.85rem;">${m.motif}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterHistoryTable() {
+        const q = document.getElementById('history-search').value.toLowerCase();
+        const type = document.getElementById('history-type-filter').value;
+
+        const filtered = movementsData.filter(m => {
+            const matchesSearch = m.medicament_nom.toLowerCase().includes(q) || 
+                                  m.medicament_code.toLowerCase().includes(q) || 
+                                  (m.numero_lot && m.numero_lot.toLowerCase().includes(q)) ||
+                                  m.motif.toLowerCase().includes(q);
+            const matchesType = !type || m.type_mouvement === type;
+            return matchesSearch && matchesType;
+        });
+
+        renderHistory(filtered);
+    }
+
+    function saveStockMovement(event) {
+        event.preventDefault();
+        const payload = {
+            medicament: document.getElementById('mouv-medicament').value,
+            type_mouvement: document.getElementById('mouv-type').value,
+            quantite: parseInt(document.getElementById('mouv-quantite').value),
+            numero_lot: document.getElementById('mouv-lot').value.trim() || '',
+            motif: document.getElementById('mouv-motif').value
+        };
+
+        fetch('/api/stocks/mouvement/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Mouvement de stock enregistré avec succès !');
+                document.getElementById('stock-movement-form').reset();
+                loadHistory();
+                
+                // Mettre à jour les libellés de stocks dans le sélecteur
+                // En rechargeant l'historique ou en actualisant la page
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.error || 'Erreur lors de l\'enregistrement', 'danger');
+            }
+        });
+    }
+
+    // Charger les suggestions initiales et l'historique
+    updateMotifSuggestions();
+    loadHistory();
+</script>
+{% endblock %}

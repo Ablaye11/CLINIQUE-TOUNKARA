@@ -1,0 +1,815 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Gestion des Médicaments — Clinique Tounkara{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ======================================
+       PAGE MÉDICAMENTS — layout scrollable
+       ====================================== */
+
+    /* La page doit scroller verticalement de manière fluide */
+    .main-workspace {
+        min-width: 0 !important;
+    }
+
+    .main-content {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;   /* scroll vertical naturel */
+    }
+
+    /* La table card prend 100% de la largeur dispo */
+    .card-table {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 2rem;
+    }
+
+    /* Le tableau lui-même est scrollable en X si l'écran est petit */
+    #meds-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        min-width: 1100px !important;
+    }
+
+    #meds-table th, #meds-table td {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    /* La zone de scroll X est sur le wrapper, PAS sur le tableau entier */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: visible !important; /* PAS de max-height ici = page entière scrollable */
+        width: 100%;
+    }
+
+    /* Boutons d'action dans le tableau */
+    .tbl-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 0.82rem;
+        transition: all 0.18s ease;
+    }
+
+    .tbl-action-btn:hover {
+        background: rgba(99,102,241,0.12);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .tbl-action-btn.danger:hover {
+        background: rgba(239,68,68,0.12);
+        border-color: var(--color-danger);
+        color: var(--color-danger);
+    }
+
+    /* Badge statut */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge.disponible  { background: rgba(16,185,129,0.12); color: #10b981; }
+    .status-badge.faible      { background: rgba(251,191,36,0.12);  color: #f59e0b; }
+    .status-badge.rupture     { background: rgba(239,68,68,0.12);   color: #ef4444; }
+    .status-badge.expire      { background: rgba(107,114,128,0.15); color: #9ca3af; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="table-header" style="margin-bottom: 1rem;">
+    <div>
+        <h2 style="font-size: 1.4rem; font-weight: 700;">💊 Gestion des Médicaments</h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Recherche, modification rapide, filtres et scan code-barres</p>
+    </div>
+    <div class="table-actions">
+        <button class="btn btn-secondary" onclick="generateDemoMedicaments()" title="Générer Médocs Démo" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); color: var(--color-primary);">
+            <i class="fa-solid fa-database"></i> <span>Démo</span>
+        </button>
+        <button class="btn btn-secondary" onclick="openImportCSVModal()" title="Importer CSV / Excel" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #10b981;">
+            <i class="fa-solid fa-file-arrow-up"></i> <span>Importer CSV</span>
+        </button>
+        <button class="btn btn-secondary" onclick="openBarcodeScannerModal()" title="Scanner Code-barres">
+            <i class="fa-solid fa-barcode"></i> <span>Scanner</span>
+        </button>
+        <button class="btn btn-primary" onclick="openAddMedicamentModal()">
+            <i class="fa-solid fa-plus"></i> Nouveau Médicament
+        </button>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card-table" style="margin-bottom: 1rem; padding: 0.85rem 1.25rem;">
+    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end;">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 2 1 240px;">
+            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Recherche instantanée</label>
+            <input type="text" id="filter-search" class="input-control" placeholder="🔍  Nom, code, catégorie..." oninput="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+        </div>
+
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 140px;">
+            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Catégorie</label>
+            <select id="filter-categorie" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+                <option value="">Toutes</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 120px;">
+            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Expiration</label>
+            <select id="filter-expiration" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+                <option value="">Tous</option>
+                <option value="expired">Expirés</option>
+                <option value="proche">≤ 30 jours</option>
+                <option value="60">≤ 60 jours</option>
+                <option value="90">≤ 90 jours</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 120px;">
+            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Statut</label>
+            <select id="filter-statut" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+                <option value="">Tous</option>
+                <option value="disponible">✅ Disponible</option>
+                <option value="stock faible">⚠️ Stock faible</option>
+                <option value="rupture">🔴 Rupture</option>
+                <option value="expire">💀 Expiré</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1.2 1 180px;">
+            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Trier par</label>
+            <div style="display: flex; gap: 0.4rem; width: 100%;">
+                <select id="sort-by" class="input-control" style="flex-grow: 1; padding: 0.5rem 0.85rem; font-size: 0.875rem;" onchange="loadMedicaments()">
+                    <option value="nom">Nom</option>
+                    <option value="stock">Stock</option>
+                    <option value="prix_vente">Prix vente</option>
+                    <option value="date_expiration">Expiration</option>
+                </select>
+                <button class="btn btn-secondary" id="btn-sort-dir" onclick="toggleSortDirection()" style="padding: 0 0.65rem; flex-shrink: 0; height: 35px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-sort-down"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Table -->
+<div class="card-table" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="table-custom" id="meds-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Code</th>
+                    <th>Nom du médicament</th>
+                    <th style="width: 120px;">Catégorie</th>
+                    <th style="text-align: center; width: 75px;">Stock</th>
+                    <th style="text-align: right; width: 100px;">Prix achat</th>
+                    <th style="text-align: right; width: 100px;">Prix vente</th>
+                    <th style="width: 105px;">Expiration</th>
+                    <th style="width: 160px;">Fournisseur</th>
+                    <th style="width: 110px;">Statut</th>
+                    <th style="text-align: right; width: 85px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="medicaments-tbody">
+                <!-- Chargé dynamiquement par JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Ajout/Modification Médicament -->
+<div class="modal" id="med-form-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="med-modal-title">Nouveau Médicament</h3>
+            <button class="modal-close" onclick="closeMedModal()">&times;</button>
+        </div>
+        <form id="med-form" onsubmit="saveMedicament(event)">
+            <div class="modal-body">
+                <input type="hidden" id="med-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Code médicament / Code-barres *</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="med-code" class="input-control" required style="flex-grow: 1;">
+                            <button type="button" class="btn btn-secondary" onclick="generateRandomBarcode()" title="Générer un code-barres">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom du médicament *</label>
+                        <input type="text" id="med-nom" class="input-control" required placeholder="ex: Doliprane 1000mg">
+                    </div>
+                    <div class="form-group">
+                        <label>Catégorie *</label>
+                        <input type="text" id="med-categorie" class="input-control" required placeholder="ex: Analgésique" list="categories-list">
+                        <datalist id="categories-list">
+                            {% for cat in categories %}
+                            <option value="{{ cat }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock initial *</label>
+                        <input type="number" id="med-stock" class="input-control" min="0" required value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock minimum d'alerte</label>
+                        <input type="number" id="med-stock-min" class="input-control" min="0" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>Prix d'achat (FCFA) *</label>
+                        <input type="number" id="med-prix-achat" class="input-control" min="0" required value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Prix de vente (FCFA) *</label>
+                        <input type="number" id="med-prix-vente" class="input-control" min="0" required value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'expiration *</label>
+                        <input type="date" id="med-date-expiration" class="input-control" required>
+                    </div>
+                    <div class="form-group-full">
+                        <label>Fournisseur</label>
+                        <select id="med-fournisseur" class="input-control">
+                            <option value="">Aucun fournisseur</option>
+                            {% for f in fournisseurs %}
+                            <option value="{{ f.id }}">{{ f.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeMedModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Scanner Code-barres -->
+<div class="modal" id="barcode-scanner-modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h3>Scanner Code-barres</h3>
+            <button class="modal-close" onclick="closeBarcodeScannerModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <div style="width: 100%; height: 200px; background: #000; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                <!-- Simulated Laser Beam Scanner Animation -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-around; opacity: 0.3;">
+                    <div style="border-top: 1px dashed var(--color-primary); width: 100%;"></div>
+                    <div style="border-top: 1px dashed var(--color-primary); width: 100%;"></div>
+                </div>
+                <div style="width: 80%; height: 2px; background: red; position: absolute; box-shadow: 0 0 10px red; animation: scanBeam 2s infinite ease-in-out;"></div>
+                <i class="fa-solid fa-barcode" style="font-size: 5rem; color: #334155; z-index: 1;"></i>
+            </div>
+            
+            <style>
+                @keyframes scanBeam {
+                    0% { top: 10%; }
+                    50% { top: 90%; }
+                    100% { top: 10%; }
+                }
+            </style>
+            
+            <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);">
+                Utilisez votre lecteur de code-barres (douchette) pour scanner, ou saisissez manuellement le code ci-dessous pour simuler :
+            </p>
+            <input type="text" id="manual-scan-input" class="input-control" style="width: 100%; text-align: center; font-size: 1.2rem; font-weight: bold; letter-spacing: 2px;" placeholder="Entrez le code et validez" autofocus>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeBarcodeScannerModal()">Fermer</button>
+            <button class="btn btn-primary" onclick="triggerBarcodeSearch()">Rechercher</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let sortReverse = false;
+
+    // Charger les médicaments
+    function loadMedicaments() {
+        const q = document.getElementById('filter-search').value;
+        const cat = document.getElementById('filter-categorie').value;
+        const exp = document.getElementById('filter-expiration').value;
+        const statut = document.getElementById('filter-statut').value;
+        const sort = document.getElementById('sort-by').value;
+
+        const url = `/api/medicaments/?q=${encodeURIComponent(q)}&categorie=${encodeURIComponent(cat)}&exp=${encodeURIComponent(exp)}&statut=${encodeURIComponent(statut)}&sort=${sort}&reverse=${sortReverse}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('medicaments-tbody');
+                tbody.innerHTML = '';
+
+                if (data.medicaments.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun médicament correspondant</td></tr>`;
+                    return;
+                }
+
+                data.medicaments.forEach(med => {
+                    const tr = document.createElement('tr');
+                    tr.id = `med-row-${med.id}`;
+                    
+                    let badgeClass = 'badge-dispo';
+                    if (med.statut === 'Stock faible') badgeClass = 'badge-faible';
+                    if (med.statut === 'Rupture' || med.statut === 'Expiré') badgeClass = 'badge-expire';
+
+                    tr.innerHTML = `<td style="font-family: monospace; font-weight: bold; font-size: 0.82rem; color: var(--text-secondary);">${med.code}</td><td class="editable" data-field="nom" data-id="${med.id}" style="font-weight: 500;">${med.nom}</td><td class="editable" data-field="categorie" data-id="${med.id}">${med.categorie}</td><td class="editable" data-field="stock" data-id="${med.id}" style="font-weight: bold; text-align: center;">${med.stock}</td><td class="editable" data-field="prix_achat" data-id="${med.id}" style="text-align: right;">${med.prix_achat} FCFA</td><td class="editable" data-field="prix_vente" data-id="${med.id}" style="color: var(--color-primary); font-weight: bold; text-align: right;">${med.prix_vente} FCFA</td><td class="editable" data-field="date_expiration" data-id="${med.id}">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td><td style="max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${med.fournisseur_nom || ''}">${med.fournisseur_nom || ''}</td><td><span class="badge-status ${badgeClass}">${med.statut}</span></td><td style="text-align: right;"><div style="display: flex; gap: 0.4rem; justify-content: flex-end;"><button class="btn-action-icon edit" onclick="editMedicament(${JSON.stringify(med).replace(/"/g, '&quot;')})" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn-action-icon delete" onclick="deleteMedicament(${med.id}, '${med.nom.replace(/'/g, "\\'")}')" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
+                    tbody.appendChild(tr);
+                });
+
+                attachInlineEditing();
+            });
+    }
+
+    // Gestion du tri croissant/décroissant
+    function toggleSortDirection() {
+        sortReverse = !sortReverse;
+        const icon = document.getElementById('btn-sort-dir').querySelector('i');
+        if (sortReverse) {
+            icon.className = 'fa-solid fa-sort-up';
+        } else {
+            icon.className = 'fa-solid fa-sort-down';
+        }
+        loadMedicaments();
+    }
+
+    // --- Inline Modification rapide ---
+    function attachInlineEditing() {
+        document.querySelectorAll('#meds-table td.editable').forEach(cell => {
+            cell.addEventListener('dblclick', function() {
+                if (this.querySelector('input')) return; // Déjà en édition
+
+                const field = this.dataset.field;
+                const id = this.dataset.id;
+                const originalText = this.innerText.replace(' FCFA', '').trim();
+
+                const input = document.createElement('input');
+                input.className = 'inline-edit-input';
+                
+                if (field === 'stock' || field === 'prix_achat' || field === 'prix_vente') {
+                    input.type = 'number';
+                } else if (field === 'date_expiration') {
+                    input.type = 'date';
+                    // Convertir JJ/MM/AAAA en AAAA-MM-JJ pour l'input date
+                    const parts = originalText.split('/');
+                    if (parts.length === 3) {
+                        input.value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                } else {
+                    input.type = 'text';
+                }
+
+                if (field !== 'date_expiration') {
+                    input.value = originalText;
+                }
+
+                this.innerText = '';
+                this.appendChild(input);
+                input.focus();
+
+                // Sauvegarder sur 'Enter' ou 'Blur'
+                const saveHandler = () => {
+                    const newValue = input.value.trim();
+                    if (newValue === '' || newValue === originalText) {
+                        // Revenir à l'ancien texte si vide ou inchangé
+                        this.innerText = field.includes('prix') ? originalText + ' FCFA' : originalText;
+                        return;
+                    }
+
+                    // Charger les détails actuels du produit avant de faire la requête
+                    fetch(`/api/medicaments/?q=${id}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const currentMed = data.medicaments.find(m => m.id == id);
+                            if (!currentMed) return;
+
+                            // Préparer les données complètes requises par l'API
+                            const payload = {
+                                id: id,
+                                code: currentMed.code,
+                                nom: currentMed.nom,
+                                categorie: currentMed.categorie,
+                                stock: currentMed.stock,
+                                stock_minimum: currentMed.stock_minimum,
+                                prix_achat: currentMed.prix_achat,
+                                prix_vente: currentMed.prix_vente,
+                                date_expiration: currentMed.date_expiration,
+                                fournisseur: currentMed.fournisseur_id
+                            };
+
+                            // Modifier la valeur du champ modifié
+                            if (field === 'date_expiration') {
+                                payload[field] = newValue;
+                            } else if (field === 'stock' || field === 'prix_achat' || field === 'prix_vente') {
+                                payload[field] = parseFloat(newValue);
+                            } else {
+                                payload[field] = newValue;
+                            }
+
+                            fetch('/api/medicaments/save/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify(payload)
+                            })
+                            .then(res => res.json())
+                            .then(resData => {
+                                if (resData.success) {
+                                    showToast('Modification enregistrée avec succès !');
+                                    loadMedicaments();
+                                } else {
+                                    showToast(resData.error || 'Erreur lors de la modification', 'danger');
+                                    loadMedicaments();
+                                }
+                            });
+                        });
+                };
+
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') saveHandler();
+                    if (e.key === 'Escape') {
+                        cell.innerText = field.includes('prix') ? originalText + ' FCFA' : originalText;
+                    }
+                });
+
+                input.addEventListener('blur', saveHandler);
+            });
+        });
+    }
+
+    // --- Modal CRUD médicament ---
+    function openAddMedicamentModal() {
+        document.getElementById('med-modal-title').innerText = 'Nouveau Médicament';
+        document.getElementById('med-form').reset();
+        document.getElementById('med-id').value = '';
+        document.getElementById('med-stock').disabled = false; // Permettre la saisie initiale
+        document.getElementById('med-form-modal').classList.add('active');
+    }
+
+    function editMedicament(med) {
+        document.getElementById('med-modal-title').innerText = 'Modifier Médicament';
+        document.getElementById('med-id').value = med.id;
+        document.getElementById('med-code').value = med.code;
+        document.getElementById('med-nom').value = med.nom;
+        document.getElementById('med-categorie').value = med.categorie;
+        document.getElementById('med-stock').value = med.stock;
+        document.getElementById('med-stock').disabled = false; // Laisser l'admin ajuster librement
+        document.getElementById('med-stock-min').value = med.stock_minimum;
+        document.getElementById('med-prix-achat').value = med.prix_achat;
+        document.getElementById('med-prix-vente').value = med.prix_vente;
+        document.getElementById('med-date-expiration').value = med.date_expiration;
+        document.getElementById('med-fournisseur').value = med.fournisseur_id;
+
+        document.getElementById('med-form-modal').classList.add('active');
+    }
+
+    function closeMedModal() {
+        document.getElementById('med-form-modal').classList.remove('active');
+    }
+
+    function saveMedicament(event) {
+        event.preventDefault();
+        const payload = {
+            id: document.getElementById('med-id').value || null,
+            code: document.getElementById('med-code').value,
+            nom: document.getElementById('med-nom').value,
+            categorie: document.getElementById('med-categorie').value,
+            stock: parseInt(document.getElementById('med-stock').value),
+            stock_minimum: parseInt(document.getElementById('med-stock-min').value),
+            prix_achat: parseFloat(document.getElementById('med-prix-achat').value),
+            prix_vente: parseFloat(document.getElementById('med-prix-vente').value),
+            date_expiration: document.getElementById('med-date-expiration').value,
+            fournisseur: document.getElementById('med-fournisseur').value || null
+        };
+
+        fetch('/api/medicaments/save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Médicament enregistré avec succès !');
+                closeMedModal();
+                loadMedicaments();
+            } else {
+                showToast(data.error || 'Une erreur est survenue', 'danger');
+            }
+        });
+    }
+
+    function deleteMedicament(id, nom) {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer le médicament "${nom}" ?`)) {
+            fetch(`/api/medicaments/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Médicament supprimé.');
+                    loadMedicaments();
+                } else {
+                    showToast(data.error || 'Erreur', 'danger');
+                }
+            });
+        }
+    }
+
+    function generateRandomBarcode() {
+        // Simuler la génération d'un code barre EAN-13
+        let code = "3";
+        for (let i = 0; i < 12; i++) {
+            code += Math.floor(Math.random() * 10);
+        }
+        document.getElementById('med-code').value = code;
+        showToast('Code-barres généré !');
+    }
+
+    // --- Modal Scanner Code-barres ---
+    function openBarcodeScannerModal() {
+        document.getElementById('barcode-scanner-modal').classList.add('active');
+        const input = document.getElementById('manual-scan-input');
+        input.value = '';
+        setTimeout(() => input.focus(), 300);
+    }
+
+    function closeBarcodeScannerModal() {
+        document.getElementById('barcode-scanner-modal').classList.remove('active');
+    }
+
+    function triggerBarcodeSearch() {
+        const code = document.getElementById('manual-scan-input').value.trim();
+        if (!code) return;
+
+        fetch(`/api/medicaments/?q=${encodeURIComponent(code)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.medicaments.length > 0) {
+                    // Trouver le médicament correspondant exactement au code
+                    const med = data.medicaments.find(m => m.code === code) || data.medicaments[0];
+                    closeBarcodeScannerModal();
+                    showDrugGlobalDetails(med);
+                } else {
+                    showToast('Aucun médicament ne correspond à ce code-barres. Création proposée.', 'warning');
+                    // Ouvrir la création avec ce code pré-rempli
+                    closeBarcodeScannerModal();
+                    openAddMedicamentModal();
+                    document.getElementById('med-code').value = code;
+                }
+            });
+    }
+
+    // Scanner automatique (écouteur de touche Entrée sur le scanner manuel)
+    document.getElementById('manual-scan-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            triggerBarcodeSearch();
+        }
+    });
+
+    function generateDemoMedicaments() {
+        if (confirm("Voulez-vous peupler la base de données avec 8 médicaments de test (Doliprane, Amoxicilline, Spasfon, etc.) ?")) {
+            fetch('/api/peupler/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`Base de données peuplée avec succès ! ${data.inserted} nouveaux produits insérés.`);
+                    loadMedicaments();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.error || 'Erreur lors de la génération', 'danger');
+                }
+            });
+        }
+    }
+
+    // Chargement initial
+    loadMedicaments();
+</script>
+{% endblock %}
+
+{% block extra_html %}
+<!-- ===== MODAL IMPORT CSV ===== -->
+<div class="modal" id="import-csv-modal">
+    <div class="modal-content" style="max-width: 580px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-file-arrow-up" style="color: #10b981;"></i> Importer des m&eacute;dicaments en masse</h3>
+            <button class="modal-close" onclick="closeImportCSVModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+
+            <!-- Étape 1 : Télécharger le modèle -->
+            <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;">
+                <div style="font-weight: 600; color: #10b981; margin-bottom: 0.4rem;">
+                    <i class="fa-solid fa-circle-1"></i> &Eacute;tape 1 — T&eacute;l&eacute;charger le mod&egrave;le
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                    Ouvrez ce fichier dans <strong>Excel</strong> ou <strong>LibreOffice Calc</strong>, remplissez vos m&eacute;dicaments et sauvegardez en <em>.csv</em>.
+                </p>
+                <a href="/api/import/template/" class="btn btn-secondary" style="font-size: 0.85rem; text-decoration: none;">
+                    <i class="fa-solid fa-download"></i> T&eacute;l&eacute;charger le mod&egrave;le CSV
+                </a>
+            </div>
+
+            <!-- Étape 2 : Colonnes attendues -->
+            <div style="background: rgba(99,102,241,0.07); border-radius: 8px; padding: 0.85rem; margin-bottom: 1.25rem; font-size: 0.82rem;">
+                <div style="font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-circle-2"></i> Colonnes du fichier CSV
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">code *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">nom *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">categorie *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">stock</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">stock_minimum</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">prix_achat *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">prix_vente *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">date_expiration *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">fournisseur_nom</span>
+                </div>
+                <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.78rem;">* = obligatoire &nbsp;|&nbsp; Date format : AAAA-MM-JJ (ex: 2027-12-31) &nbsp;|&nbsp; S&eacute;parateur : ; ou ,</div>
+            </div>
+
+            <!-- Étape 3 : Sélectionner le fichier -->
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.6rem; font-size: 0.85rem;">
+                <i class="fa-solid fa-circle-3"></i> &Eacute;tape 3 — S&eacute;lectionner votre fichier
+            </div>
+            <div id="csv-drop-zone"
+                 onclick="document.getElementById('csv-file-input').click()"
+                 ondragover="event.preventDefault(); this.style.borderColor='#10b981';"
+                 ondragleave="this.style.borderColor='rgba(16,185,129,0.3)';"
+                 ondrop="handleCSVDrop(event)"
+                 style="border: 2px dashed rgba(16,185,129,0.3); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; display: block;"></i>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cliquez ou glissez votre fichier CSV ici</div>
+                <div id="csv-file-name" style="margin-top: 0.5rem; font-weight: 600; color: #10b981; font-size: 0.85rem;"></div>
+                <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="onCSVFileSelected(this)">
+            </div>
+
+            <!-- Résultat de l'import -->
+            <div id="import-result" style="display: none;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeImportCSVModal()">Fermer</button>
+            <button class="btn btn-primary" id="btn-lancer-import" onclick="lancerImportCSV()" disabled
+                    style="background: #10b981; border-color: #10b981;">
+                <i class="fa-solid fa-upload"></i> Lancer l'import
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let csvFileSelected = null;
+
+    function openImportCSVModal() {
+        document.getElementById('import-csv-modal').classList.add('active');
+        document.getElementById('import-result').style.display = 'none';
+        document.getElementById('import-result').innerHTML = '';
+        document.getElementById('csv-file-name').textContent = '';
+        document.getElementById('csv-file-input').value = '';
+        document.getElementById('btn-lancer-import').disabled = true;
+        csvFileSelected = null;
+    }
+
+    function closeImportCSVModal() {
+        document.getElementById('import-csv-modal').classList.remove('active');
+    }
+
+    function onCSVFileSelected(input) {
+        if (input.files && input.files[0]) {
+            csvFileSelected = input.files[0];
+            document.getElementById('csv-file-name').textContent = '📄 ' + csvFileSelected.name;
+            document.getElementById('btn-lancer-import').disabled = false;
+            document.getElementById('import-result').style.display = 'none';
+        }
+    }
+
+    function handleCSVDrop(event) {
+        event.preventDefault();
+        document.getElementById('csv-drop-zone').style.borderColor = 'rgba(16,185,129,0.3)';
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            csvFileSelected = file;
+            document.getElementById('csv-file-name').textContent = '📄 ' + file.name;
+            document.getElementById('btn-lancer-import').disabled = false;
+        }
+    }
+
+    function lancerImportCSV() {
+        if (!csvFileSelected) return;
+
+        const btn = document.getElementById('btn-lancer-import');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Import en cours...';
+
+        const formData = new FormData();
+        formData.append('fichier_csv', csvFileSelected);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch('/api/import/csv/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = '<i class="fa-solid fa-upload"></i> Lancer l\'import';
+            btn.disabled = false;
+
+            const resultDiv = document.getElementById('import-result');
+            resultDiv.style.display = 'block';
+
+            if (data.success) {
+                let html = `
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="font-weight: 700; color: #10b981; font-size: 1rem; margin-bottom: 0.5rem;">
+                            <i class="fa-solid fa-circle-check"></i> Import terminé avec succès !
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
+                            <div style="background: rgba(16,185,129,0.15); border-radius: 8px; padding: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;">${data.inserted}</div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">Nouveaux ajoutés</div>
+                            </div>
+                            <div style="background: rgba(99,102,241,0.15); border-radius: 8px; padding: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary);">${data.updated}</div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">Mis à jour</div>
+                            </div>
+                            <div style="background: rgba(239,68,68,0.1); border-radius: 8px; padding: 0.5rem;">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #ef4444;">${data.errors.length}</div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted);">Lignes ignorées</div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                if (data.errors.length > 0) {
+                    html += `<div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 0.75rem; font-size: 0.8rem;">
+                        <div style="font-weight: 600; color: #ef4444; margin-bottom: 0.4rem;"><i class="fa-solid fa-triangle-exclamation"></i> Erreurs détectées :</div>
+                        <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary);">
+                            ${data.errors.map(e => `<li>${e}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                }
+
+                resultDiv.innerHTML = html;
+                loadMedicaments(); // Rafraîchir la liste
+                showToast(`Import réussi : ${data.inserted} ajoutés, ${data.updated} mis à jour`);
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 1rem; color: #ef4444;">
+                        <i class="fa-solid fa-circle-xmark"></i> <strong>Erreur :</strong> ${data.error}
+                    </div>`;
+                showToast(data.error || 'Erreur lors de l\'import', 'danger');
+            }
+        })
+        .catch(err => {
+            btn.innerHTML = '<i class="fa-solid fa-upload"></i> Lancer l\'import';
+            btn.disabled = false;
+            showToast('Erreur réseau lors de l\'import', 'danger');
+        });
+    }
+</script>
+{% endblock %}
