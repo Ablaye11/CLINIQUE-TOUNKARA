@@ -556,18 +556,23 @@
         }
 
         .pos-products {
+            width: 100%;
             height: auto !important;
-            min-height: 320px !important;
-            flex-shrink: 0;
+            min-height: auto !important;
+            overflow: visible !important;
         }
 
         .pos-cart {
+            width: 100%;
             height: auto !important;
             min-height: auto;
             max-height: none !important;
+            overflow: visible !important;
+            position: relative;
         }
 
-        .pos-products-header {
+        .pos-products-header,
+        .pos-cart-header {
             flex-wrap: wrap;
             align-items: flex-start;
         }
@@ -585,17 +590,32 @@
 
         .pos-product-list {
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        }
-
-        .pos-cart-header {
-            flex-wrap: wrap;
-            height: auto;
+            max-height: calc(100vh - 24rem);
+            overflow-y: auto;
+            padding-right: 0.3rem;
         }
 
         .pos-tab {
             flex: 1 1 50%;
             min-width: 0;
             padding: 0.65rem 0.5rem;
+        }
+
+        .cart-scroll-body {
+            max-height: calc(100vh - 24rem);
+            overflow-y: auto;
+            padding-bottom: 7rem;
+        }
+
+        .cart-items-wrapper {
+            padding: 0.75rem 0.85rem 1rem;
+            min-height: 1px;
+        }
+
+        #history-scroll-body {
+            max-height: calc(100vh - 24rem);
+            overflow-y: auto;
+            padding-bottom: 7rem;
         }
 
         .cart-item {
@@ -615,11 +635,13 @@
 
         .cart-scroll-body {
             max-height: none;
-            overflow-y: visible;
+            overflow-y: auto;
+            padding-bottom: 5.5rem; /* Laisser de la place sous le contenu pour le footer sticky */
         }
 
         .cart-items-wrapper {
-            padding: 0.75rem 0.85rem 0;
+            padding: 0.75rem 0.85rem 1rem;
+            min-height: 1px;
         }
 
         .pos-payment-row {
@@ -639,11 +661,26 @@
             grid-column: span 1;
         }
 
+        .pos-cart {
+            overflow: visible !important;
+            position: static !important;
+        }
+
+        .pos-products {
+            overflow: visible !important;
+        }
+
+        .pos-layout {
+            overflow: visible !important;
+        }
+
         .pos-cart-footer {
-            position: sticky;
-            bottom: 0;
+            position: relative !important;
+            bottom: auto !important;
             background: rgba(15, 23, 42, 0.96);
             z-index: 5;
+            width: 100%;
+            margin-top: 0.75rem;
         }
     }
 
