@@ -3,10 +3,19 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'clinique-tounkara-pharma-secret-key-2024-change-in-production'
-)
+# Charger un fichier .env local si présent (utile en développement)
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    with open(env_path, encoding='utf-8') as env_file:
+        for line in env_file:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            key, _, value = line.partition('=')
+            if key and value and key not in os.environ:
+                os.environ[key.strip()] = value.strip()
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'clinique-tounkara-pharma-secret-key-2024-change-in-production')
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
