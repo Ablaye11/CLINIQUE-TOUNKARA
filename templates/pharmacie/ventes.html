@@ -556,13 +556,94 @@
         }
 
         .pos-products {
-            height: 480px !important; /* Hauteur fixe pour le catalogue pour voir le panier dessous */
+            height: auto !important;
+            min-height: 320px !important;
             flex-shrink: 0;
         }
 
         .pos-cart {
             height: auto !important;
-            min-height: 450px;
+            min-height: auto;
+            max-height: none !important;
+        }
+
+        .pos-products-header {
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .pos-products-header h3 {
+            white-space: normal;
+            flex: 1 1 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .pos-products-header > div {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .pos-product-list {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+
+        .pos-cart-header {
+            flex-wrap: wrap;
+            height: auto;
+        }
+
+        .pos-tab {
+            flex: 1 1 50%;
+            min-width: 0;
+            padding: 0.65rem 0.5rem;
+        }
+
+        .cart-item {
+            grid-template-columns: 1fr auto;
+            row-gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .cart-item .cart-item-total {
+            min-width: auto;
+            text-align: right;
+        }
+
+        .cart-item > div:first-child {
+            min-width: 0;
+        }
+
+        .cart-scroll-body {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .cart-items-wrapper {
+            padding: 0.75rem 0.85rem 0;
+        }
+
+        .pos-payment-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pos-payment-row label {
+            white-space: normal;
+        }
+
+        .client-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .client-form-grid .cfield.full {
+            grid-column: span 1;
+        }
+
+        .pos-cart-footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.96);
+            z-index: 5;
         }
     }
 

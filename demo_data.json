@@ -1,0 +1,1323 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 3,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 3,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 3,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 3,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 2,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 2,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 2,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 2,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 4,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 4,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 4,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 4,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 5,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 5,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 5,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 5,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 6,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 6,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 6,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 6,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add fournisseur",
+    "content_type": 7,
+    "codename": "add_fournisseur"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change fournisseur",
+    "content_type": 7,
+    "codename": "change_fournisseur"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete fournisseur",
+    "content_type": 7,
+    "codename": "delete_fournisseur"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view fournisseur",
+    "content_type": 7,
+    "codename": "view_fournisseur"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add vente",
+    "content_type": 11,
+    "codename": "add_vente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change vente",
+    "content_type": 11,
+    "codename": "change_vente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete vente",
+    "content_type": 11,
+    "codename": "delete_vente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view vente",
+    "content_type": 11,
+    "codename": "view_vente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add medicament",
+    "content_type": 9,
+    "codename": "add_medicament"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change medicament",
+    "content_type": 9,
+    "codename": "change_medicament"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete medicament",
+    "content_type": 9,
+    "codename": "delete_medicament"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view medicament",
+    "content_type": 9,
+    "codename": "view_medicament"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can add mouvement stock",
+    "content_type": 10,
+    "codename": "add_mouvementstock"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can change mouvement stock",
+    "content_type": 10,
+    "codename": "change_mouvementstock"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can delete mouvement stock",
+    "content_type": 10,
+    "codename": "delete_mouvementstock"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can view mouvement stock",
+    "content_type": 10,
+    "codename": "view_mouvementstock"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can add ligne vente",
+    "content_type": 8,
+    "codename": "add_lignevente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 42,
+  "fields": {
+    "name": "Can change ligne vente",
+    "content_type": 8,
+    "codename": "change_lignevente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 43,
+  "fields": {
+    "name": "Can delete ligne vente",
+    "content_type": 8,
+    "codename": "delete_lignevente"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 44,
+  "fields": {
+    "name": "Can view ligne vente",
+    "content_type": 8,
+    "codename": "view_lignevente"
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$XrM5aqZWw94EjklQwWjyM6$0Wtwkncl1Zyf2CltCuLs7Tl53uGfUgdtVfO63FVpe+0=",
+    "last_login": "2026-07-13T12:50:54.016Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "Super",
+    "last_name": "",
+    "email": "admin@clinique.sn",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-09T22:14:36.563Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$sKwmmXrmoA5KZMy6k1ok4r$UDXV+9Ug921CVrxBQHMTe5lENGTA8YcoBoC8lsuD1hE=",
+    "last_login": "2026-06-10T02:13:12.268Z",
+    "is_superuser": false,
+    "username": "abdel",
+    "first_name": "abdel",
+    "last_name": "caissier",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-06-10T02:12:52.306Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$uULegfzJ1G4nnyAUSUrUax$b3LgrjsTIy4kLD63TV1wpOHg0XAtz1eX6ATGfN6a+I0=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "Ablaye",
+    "first_name": "Ablaye",
+    "last_name": "Seck",
+    "email": "",
+    "is_staff": false,
+    "is_active": false,
+    "date_joined": "2026-07-13T12:52:42Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "auth",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "pharmacie",
+    "model": "fournisseur"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "pharmacie",
+    "model": "lignevente"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 9,
+  "fields": {
+    "app_label": "pharmacie",
+    "model": "medicament"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 10,
+  "fields": {
+    "app_label": "pharmacie",
+    "model": "mouvementstock"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 11,
+  "fields": {
+    "app_label": "pharmacie",
+    "model": "vente"
+  }
+},
+{
+  "model": "pharmacie.fournisseur",
+  "pk": 2,
+  "fields": {
+    "nom": "Pharmacie Nationale d'Approvisionnement (PNA)",
+    "telephone": "+221 33 821 00 00",
+    "email": "contact@pna.sn",
+    "adresse": "Dakar, Sénégal",
+    "created_at": "2026-06-09T21:10:57.012Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 9,
+  "fields": {
+    "code": "3011234567890",
+    "nom": "Doliprane 1000mg (Paracétamol)",
+    "categorie": "Analgésique",
+    "stock": 299,
+    "stock_minimum": 10,
+    "prix_achat": "500.00",
+    "prix_vente": "750.00",
+    "date_expiration": "2028-06-08",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.029Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 10,
+  "fields": {
+    "code": "3011234567891",
+    "nom": "Paracétamol Mylan 500mg",
+    "categorie": "Analgésique",
+    "stock": 16,
+    "stock_minimum": 10,
+    "prix_achat": "300.00",
+    "prix_vente": "450.00",
+    "date_expiration": "2027-06-09",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.052Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 11,
+  "fields": {
+    "code": "3011234567892",
+    "nom": "Amoxicilline Sandoz 500mg",
+    "categorie": "Antibiotique",
+    "stock": 79,
+    "stock_minimum": 5,
+    "prix_achat": "1200.00",
+    "prix_vente": "1800.00",
+    "date_expiration": "2026-06-29",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.077Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 12,
+  "fields": {
+    "code": "3011234567893",
+    "nom": "Ibuprofène Biogaran 400mg",
+    "categorie": "Anti-inflammatoire",
+    "stock": 5,
+    "stock_minimum": 10,
+    "prix_achat": "400.00",
+    "prix_vente": "600.00",
+    "date_expiration": "2026-12-06",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.096Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 13,
+  "fields": {
+    "code": "3011234567894",
+    "nom": "Spasfon Lyoc (Phloroglucinol)",
+    "categorie": "Antispasmodique",
+    "stock": 120,
+    "stock_minimum": 5,
+    "prix_achat": "800.00",
+    "prix_vente": "1200.00",
+    "date_expiration": "2026-06-04",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.106Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 14,
+  "fields": {
+    "code": "3011234567895",
+    "nom": "Gaviscon Suspension Buvable",
+    "categorie": "Anti-acide",
+    "stock": 49,
+    "stock_minimum": 5,
+    "prix_achat": "900.00",
+    "prix_vente": "1400.00",
+    "date_expiration": "2027-09-02",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.126Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 15,
+  "fields": {
+    "code": "3011234567896",
+    "nom": "Augmentin Nourrisson 100mg",
+    "categorie": "Antibiotique",
+    "stock": 29,
+    "stock_minimum": 3,
+    "prix_achat": "2200.00",
+    "prix_vente": "3100.00",
+    "date_expiration": "2026-09-12",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.146Z"
+  }
+},
+{
+  "model": "pharmacie.medicament",
+  "pk": 16,
+  "fields": {
+    "code": "3011234567897",
+    "nom": "Ventoline HFA Inhalateur",
+    "categorie": "Bronchodilatateur",
+    "stock": 70,
+    "stock_minimum": 5,
+    "prix_achat": "1500.00",
+    "prix_vente": "2300.00",
+    "date_expiration": "2027-12-01",
+    "fournisseur": 2,
+    "created_at": "2026-06-09T21:10:57.167Z"
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 14,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "ENTREE",
+    "quantite": 150,
+    "date_mouvement": "2026-06-09T21:10:57.036Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 15,
+  "fields": {
+    "medicament": 10,
+    "type_mouvement": "ENTREE",
+    "quantite": 8,
+    "date_mouvement": "2026-06-09T21:10:57.061Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 16,
+  "fields": {
+    "medicament": 11,
+    "type_mouvement": "ENTREE",
+    "quantite": 40,
+    "date_mouvement": "2026-06-09T21:10:57.082Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 17,
+  "fields": {
+    "medicament": 13,
+    "type_mouvement": "ENTREE",
+    "quantite": 60,
+    "date_mouvement": "2026-06-09T21:10:57.112Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 18,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "ENTREE",
+    "quantite": 25,
+    "date_mouvement": "2026-06-09T21:10:57.132Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 19,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "ENTREE",
+    "quantite": 15,
+    "date_mouvement": "2026-06-09T21:10:57.151Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 20,
+  "fields": {
+    "medicament": 16,
+    "type_mouvement": "ENTREE",
+    "quantite": 35,
+    "date_mouvement": "2026-06-09T21:10:57.174Z",
+    "motif": "Importation de stock initiale",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 21,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T22:32:49.334Z",
+    "motif": "Vente Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 22,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-09T22:32:49.338Z",
+    "motif": "Vente Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 23,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-09T22:32:49.340Z",
+    "motif": "Vente Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 24,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "ENTREE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T22:33:04.701Z",
+    "motif": "Annulation Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 25,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-09T22:33:04.707Z",
+    "motif": "Annulation Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 26,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-09T22:33:04.711Z",
+    "motif": "Annulation Facture N° FAC-20260609223249-1",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 27,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T23:35:30.036Z",
+    "motif": "Vente Facture N° FAC-20260609233530-3",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 28,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T23:35:30.039Z",
+    "motif": "Vente Facture N° FAC-20260609233530-3",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 29,
+  "fields": {
+    "medicament": 11,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T23:35:30.041Z",
+    "motif": "Vente Facture N° FAC-20260609233530-3",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 30,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T23:35:30.051Z",
+    "motif": "Vente Facture N° FAC-20260609233530-3",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 31,
+  "fields": {
+    "medicament": 12,
+    "type_mouvement": "AJUSTEMENT",
+    "quantite": 1,
+    "date_mouvement": "2026-06-09T23:39:14.124Z",
+    "motif": "Ajustement manuel lors de la modification rapide",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 32,
+  "fields": {
+    "medicament": 12,
+    "type_mouvement": "AJUSTEMENT",
+    "quantite": 5,
+    "date_mouvement": "2026-06-10T02:07:02.216Z",
+    "motif": "Ajustement manuel lors de la modification rapide",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 33,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-10T02:09:30.976Z",
+    "motif": "Vente Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 34,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-10T02:09:30.983Z",
+    "motif": "Vente Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 35,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-10T02:09:30.987Z",
+    "motif": "Vente Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 36,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "ENTREE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-10T02:10:30.704Z",
+    "motif": "Annulation Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 37,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-10T02:10:30.714Z",
+    "motif": "Annulation Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 38,
+  "fields": {
+    "medicament": 14,
+    "type_mouvement": "ENTREE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-10T02:10:30.720Z",
+    "motif": "Annulation Facture N° FAC-20260610020930-4",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 39,
+  "fields": {
+    "medicament": 11,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:48:59.205Z",
+    "motif": "Vente Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 40,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:48:59.207Z",
+    "motif": "Vente Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 41,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "SORTIE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:48:59.211Z",
+    "motif": "Vente Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 42,
+  "fields": {
+    "medicament": 11,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:52:32.281Z",
+    "motif": "Annulation Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 43,
+  "fields": {
+    "medicament": 15,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:52:32.293Z",
+    "motif": "Annulation Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 44,
+  "fields": {
+    "medicament": 9,
+    "type_mouvement": "ENTREE",
+    "quantite": 2,
+    "date_mouvement": "2026-06-12T16:52:32.317Z",
+    "motif": "Annulation Facture N° FAC-20260612164859-5",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 45,
+  "fields": {
+    "medicament": 16,
+    "type_mouvement": "SORTIE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-12T17:13:03.716Z",
+    "motif": "Vente Facture N° FAC-20260612171303-6",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.mouvementstock",
+  "pk": 46,
+  "fields": {
+    "medicament": 16,
+    "type_mouvement": "ENTREE",
+    "quantite": 1,
+    "date_mouvement": "2026-06-12T17:13:16.608Z",
+    "motif": "Annulation Facture N° FAC-20260612171303-6",
+    "numero_lot": null
+  }
+},
+{
+  "model": "pharmacie.vente",
+  "pk": 2,
+  "fields": {
+    "numero_facture": "FAC-20260609223249-1",
+    "client_nom": "abdel",
+    "client_adresse": "km",
+    "client_age": "23",
+    "client_telephone": "777924065",
+    "date_vente": "2026-06-09T22:32:49.326Z",
+    "mode_paiement": "OM",
+    "total": "9750.00",
+    "est_annulee": true,
+    "created_at": "2026-06-09T22:32:49.327Z"
+  }
+},
+{
+  "model": "pharmacie.vente",
+  "pk": 3,
+  "fields": {
+    "numero_facture": "FAC-20260609233530-3",
+    "client_nom": "seck",
+    "client_adresse": "dakar",
+    "client_age": "23",
+    "client_telephone": "777834965",
+    "date_vente": "2026-06-09T23:35:30.020Z",
+    "mode_paiement": "WAVE",
+    "total": "7050.00",
+    "est_annulee": false,
+    "created_at": "2026-06-09T23:35:30.021Z"
+  }
+},
+{
+  "model": "pharmacie.vente",
+  "pk": 4,
+  "fields": {
+    "numero_facture": "FAC-20260610020930-4",
+    "client_nom": "abdel",
+    "client_adresse": "KM",
+    "client_age": "34",
+    "client_telephone": "777934076",
+    "date_vente": "2026-06-10T02:09:30.961Z",
+    "mode_paiement": "ESPECES",
+    "total": "6000.00",
+    "est_annulee": true,
+    "created_at": "2026-06-10T02:09:30.962Z"
+  }
+},
+{
+  "model": "pharmacie.vente",
+  "pk": 5,
+  "fields": {
+    "numero_facture": "FAC-20260612164859-5",
+    "client_nom": "diop",
+    "client_adresse": "DIAXAY",
+    "client_age": "34",
+    "client_telephone": "764565654",
+    "date_vente": "2026-06-12T16:48:59.191Z",
+    "mode_paiement": "WAVE",
+    "total": "11300.00",
+    "est_annulee": true,
+    "created_at": "2026-06-12T16:48:59.192Z"
+  }
+},
+{
+  "model": "pharmacie.vente",
+  "pk": 6,
+  "fields": {
+    "numero_facture": "FAC-20260612171303-6",
+    "client_nom": "Passant",
+    "client_adresse": "",
+    "client_age": null,
+    "client_telephone": "",
+    "date_vente": "2026-06-12T17:13:03.709Z",
+    "mode_paiement": "WAVE",
+    "total": "2300.00",
+    "est_annulee": true,
+    "created_at": "2026-06-12T17:13:03.710Z"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 4,
+  "fields": {
+    "vente": 2,
+    "medicament": 9,
+    "quantite": 1,
+    "prix_unitaire": "750.00",
+    "remise": "0.00",
+    "total": "750.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 5,
+  "fields": {
+    "vente": 2,
+    "medicament": 15,
+    "quantite": 2,
+    "prix_unitaire": "3100.00",
+    "remise": "0.00",
+    "total": "6200.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 6,
+  "fields": {
+    "vente": 2,
+    "medicament": 14,
+    "quantite": 2,
+    "prix_unitaire": "1400.00",
+    "remise": "0.00",
+    "total": "2800.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 7,
+  "fields": {
+    "vente": 3,
+    "medicament": 9,
+    "quantite": 1,
+    "prix_unitaire": "750.00",
+    "remise": "0.00",
+    "total": "750.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 8,
+  "fields": {
+    "vente": 3,
+    "medicament": 15,
+    "quantite": 1,
+    "prix_unitaire": "3100.00",
+    "remise": "0.00",
+    "total": "3100.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 9,
+  "fields": {
+    "vente": 3,
+    "medicament": 11,
+    "quantite": 1,
+    "prix_unitaire": "1800.00",
+    "remise": "0.00",
+    "total": "1800.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 10,
+  "fields": {
+    "vente": 3,
+    "medicament": 14,
+    "quantite": 1,
+    "prix_unitaire": "1400.00",
+    "remise": "0.00",
+    "total": "1400.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 11,
+  "fields": {
+    "vente": 4,
+    "medicament": 15,
+    "quantite": 1,
+    "prix_unitaire": "3100.00",
+    "remise": "0.00",
+    "total": "3100.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 12,
+  "fields": {
+    "vente": 4,
+    "medicament": 9,
+    "quantite": 2,
+    "prix_unitaire": "750.00",
+    "remise": "0.00",
+    "total": "1500.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 13,
+  "fields": {
+    "vente": 4,
+    "medicament": 14,
+    "quantite": 1,
+    "prix_unitaire": "1400.00",
+    "remise": "0.00",
+    "total": "1400.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 14,
+  "fields": {
+    "vente": 5,
+    "medicament": 11,
+    "quantite": 2,
+    "prix_unitaire": "1800.00",
+    "remise": "0.00",
+    "total": "3600.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 15,
+  "fields": {
+    "vente": 5,
+    "medicament": 15,
+    "quantite": 2,
+    "prix_unitaire": "3100.00",
+    "remise": "0.00",
+    "total": "6200.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 16,
+  "fields": {
+    "vente": 5,
+    "medicament": 9,
+    "quantite": 2,
+    "prix_unitaire": "750.00",
+    "remise": "0.00",
+    "total": "1500.00"
+  }
+},
+{
+  "model": "pharmacie.lignevente",
+  "pk": 17,
+  "fields": {
+    "vente": 6,
+    "medicament": 16,
+    "quantite": 1,
+    "prix_unitaire": "2300.00",
+    "remise": "0.00",
+    "total": "2300.00"
+  }
+}
+]
