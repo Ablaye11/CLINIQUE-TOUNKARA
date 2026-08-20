@@ -504,15 +504,97 @@
     .cart-empty-msg i { font-size: 2.8rem; opacity: 0.35; color: #10b981; }
     .cart-empty-msg p { font-size: 0.85rem; font-weight: 600; color: #047857; line-height: 1.5; }
 
+    /* Mobile Navigation Bar */
+    .pos-mobile-nav {
+        display: none;
+        gap: 0.35rem;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 14px;
+        padding: 0.35rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 4px 15px rgba(6, 78, 59, 0.05);
+    }
+
+    .pos-mobile-nav-btn {
+        flex: 1;
+        padding: 0.65rem 0.5rem;
+        border: none;
+        background: transparent;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #047857;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        transition: all 0.2s;
+    }
+
+    .pos-mobile-nav-btn.active {
+        background: #047857;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+    }
+
+    .mob-badge {
+        background: #ef4444;
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 800;
+        border-radius: 20px;
+        padding: 0.15rem 0.45rem;
+        line-height: 1;
+    }
+
+    .pos-mobile-nav-btn.active .mob-badge {
+        background: #ffffff;
+        color: #dc2626;
+    }
+
+    /* Floating Bottom Bar on Mobile */
+    .pos-mobile-floating-cart-bar {
+        display: none;
+        position: fixed;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        background: linear-gradient(135deg, #047857, #10b981);
+        color: white;
+        border-radius: 16px;
+        padding: 0.75rem 1rem;
+        box-shadow: 0 10px 25px rgba(4, 120, 87, 0.4);
+        z-index: 999;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .pos-mobile-floating-cart-bar:active {
+        transform: scale(0.98);
+    }
+
     /* Responsive mobile */
     @media (max-width: 768px) {
-        .pos-layout { grid-template-columns: 1fr !important; height: auto !important; overflow-y: auto !important; gap: 1rem; }
-        .main-content { overflow-y: auto !important; overflow-x: hidden !important; }
-        .pos-products { width: 100%; height: auto !important; min-height: auto !important; overflow: visible !important; }
-        .pos-cart { width: 100%; height: auto !important; max-height: none !important; overflow: visible !important; position: relative; }
-        .pos-product-list { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); max-height: calc(100vh - 24rem); overflow-y: auto; }
+        .pos-mobile-nav { display: flex !important; }
+        .pos-layout { display: flex !important; flex-direction: column !important; height: auto !important; min-height: 0 !important; gap: 0.75rem; }
+        .main-content { overflow-y: auto !important; overflow-x: hidden !important; padding: 0.75rem !important; }
+        .pos-products { width: 100%; height: auto !important; min-height: auto !important; flex: 1; }
+        .pos-cart { width: 100%; height: auto !important; max-height: none !important; position: relative; flex: 1; }
+        
+        /* Mobile Tab visibility switching */
+        .pos-layout:not(.pos-mobile-mode-cart):not(.pos-mobile-mode-history) .pos-cart { display: none !important; }
+        .pos-layout.pos-mobile-mode-cart .pos-products,
+        .pos-layout.pos-mobile-mode-history .pos-products { display: none !important; }
+        .pos-layout.pos-mobile-mode-cart .pos-cart,
+        .pos-layout.pos-mobile-mode-history .pos-cart { display: flex !important; }
+
+        .pos-product-list { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); max-height: calc(100vh - 16rem); overflow-y: auto; }
         .pos-tab { flex: 1 1 50%; }
-        .cart-scroll-body { max-height: calc(100vh - 24rem); overflow-y: auto; padding-bottom: 7rem; }
+        .cart-scroll-body { max-height: calc(100vh - 20rem); overflow-y: auto; padding-bottom: 2rem; }
         .cart-items-wrapper { padding: 0.75rem 0.85rem 1rem; }
         .pos-payment-row { flex-direction: column; align-items: stretch; }
         .client-form-grid { grid-template-columns: 1fr; }
@@ -523,6 +605,36 @@
 {% endblock %}
 
 {% block content %}
+<!-- Navigation Onglets Mobile -->
+<div class="pos-mobile-nav" id="pos-mobile-nav">
+    <button class="pos-mobile-nav-btn active" id="mob-nav-catalog" onclick="switchMobilePosTab('catalog')">
+        <i class="fa-solid fa-capsules"></i> Catalogue
+    </button>
+    <button class="pos-mobile-nav-btn" id="mob-nav-cart" onclick="switchMobilePosTab('cart')">
+        <i class="fa-solid fa-cart-shopping"></i> Panier
+        <span id="mob-cart-badge" class="mob-badge" style="display:none;">0</span>
+    </button>
+    <button class="pos-mobile-nav-btn" id="mob-nav-history" onclick="switchMobilePosTab('history')">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historique
+    </button>
+</div>
+
+<!-- Bandeau Flottant Panier Mobile -->
+<div class="pos-mobile-floating-cart-bar" id="pos-mobile-floating-cart-bar" onclick="switchMobilePosTab('cart')">
+    <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: white;">
+            <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.72rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Panier en cours</div>
+            <div style="font-size: 0.92rem; font-weight: 800;"><span id="mob-floating-count">0 article</span> — <span id="mob-floating-total">0 F</span></div>
+        </div>
+    </div>
+    <button class="btn btn-sm" style="background: white; color: #047857; font-weight: 800; border: none; padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.82rem;">
+        Voir Panier &nbsp;<i class="fa-solid fa-arrow-right"></i>
+    </button>
+</div>
+
 <div class="pos-layout">
     
     <!-- Left Pane: Product Catalog -->
@@ -898,6 +1010,63 @@
         badge.style.display = 'inline-block';
         countText.innerText = `${count} article${count > 1 ? 's' : ''}`;
         totalEl.innerText = new Intl.NumberFormat('fr-FR').format(total) + ' FCFA';
+
+        // Mettre à jour les éléments mobiles
+        const mobBadge = document.getElementById('mob-cart-badge');
+        const mobCount = document.getElementById('mob-floating-count');
+        const mobTotal = document.getElementById('mob-floating-total');
+        const floatingBar = document.getElementById('pos-mobile-floating-cart-bar');
+
+        if (cart.length === 0) {
+            if (mobBadge) mobBadge.style.display = 'none';
+            if (floatingBar) floatingBar.style.display = 'none';
+        } else {
+            if (mobBadge) {
+                mobBadge.innerText = count;
+                mobBadge.style.display = 'inline-block';
+            }
+            if (mobCount) mobCount.innerText = `${count} article${count > 1 ? 's' : ''}`;
+            if (mobTotal) mobTotal.innerText = new Intl.NumberFormat('fr-FR').format(total) + ' F';
+
+            // Afficher le bandeau flottant mobile uniquement si on est sur l'onglet catalogue
+            const layout = document.querySelector('.pos-layout');
+            if (floatingBar && layout && !layout.classList.contains('pos-mobile-mode-cart') && !layout.classList.contains('pos-mobile-mode-history')) {
+                if (window.innerWidth <= 768) {
+                    floatingBar.style.display = 'flex';
+                }
+            }
+        }
+    }
+
+    // Gestion de la navigation par onglets sur Mobile
+    function switchMobilePosTab(tabName) {
+        const layout = document.querySelector('.pos-layout');
+        if (!layout) return;
+
+        // Mettre à jour les boutons de la barre mobile
+        document.querySelectorAll('.pos-mobile-nav-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById(`mob-nav-${tabName}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Réinitialiser les classes de mode mobile
+        layout.classList.remove('pos-mobile-mode-catalog', 'pos-mobile-mode-cart', 'pos-mobile-mode-history');
+
+        const floatingBar = document.getElementById('pos-mobile-floating-cart-bar');
+
+        if (tabName === 'catalog') {
+            layout.classList.add('pos-mobile-mode-catalog');
+            if (floatingBar && cart.length > 0) {
+                floatingBar.style.display = 'flex';
+            }
+        } else if (tabName === 'cart') {
+            layout.classList.add('pos-mobile-mode-cart');
+            switchCartTab('cart');
+            if (floatingBar) floatingBar.style.display = 'none';
+        } else if (tabName === 'history') {
+            layout.classList.add('pos-mobile-mode-history');
+            switchCartTab('history');
+            if (floatingBar) floatingBar.style.display = 'none';
+        }
     }
 
     function openPOSBarcodeScan() {
