@@ -9,37 +9,49 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>{% block title %}Logiciel de Gestion Pharmaceutique — Clinique Tounkara{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <!-- Google Fonts: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
     <!-- Custom Style (cache-busting automatique via timestamp) -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}?v={% now "U" %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+    <!-- Fond d'écran ambiance Clinique Tounkara (Orbes lumineuses néon) -->
+    <div class="bg-glow-orbs">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
     <div class="app-container">
         <!-- Sidebar Navigation -->
         <aside class="sidebar" id="main-sidebar">
-            <div class="sidebar-logo">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-prescription-bottle-medical"></i>
-                </div>
-                <div class="logo-title">
-                    <h1>PharmaTounkara</h1>
-                    <span>Clinique Tounkara</span>
-                </div>
+            <div class="sidebar-logo" style="padding: 0.85rem 1rem; height: 80px; display: flex; align-items: center;">
+                <a href="https://www.clinictounkara.com/" target="_blank" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; width: 100%;" title="Visiter le site officiel clinictounkara.com">
+                    <img src="{% static 'images/logo_icon.svg' %}" alt="Logo Clinique Tounkara" style="width: 44px; height: 44px; filter: drop-shadow(0 0 8px rgba(13,148,136,0.5)); flex-shrink: 0;">
+                    <div class="logo-title">
+                        <h1 style="font-size: 1.02rem; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; margin: 0; line-height: 1.2;">CLINIQUE TOUNKARA</h1>
+                        <span style="font-size: 0.72rem; color: #06b6d4; font-weight: 600; display: block; margin-top: 1px;">Service Pharmacie 24h/7j</span>
+                    </div>
+                </a>
             </div>
 
             <nav class="sidebar-menu">
-                {% if request.user.is_superuser or request.user.last_name == 'admin' or request.user.last_name != 'caissier' %}
                 <a href="{% url 'dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                     <i class="fa-solid fa-chart-pie"></i>
                     <span class="menu-text">Tableau de bord</span>
                 </a>
+                <a href="{% url 'gestion_ventes' %}" class="menu-item {% if request.resolver_match.url_name == 'gestion_ventes' %}active{% endif %}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="menu-text">Vente Rapide</span>
+                </a>
+                {% if request.user.is_superuser or request.user.last_name == 'admin' or request.user.last_name != 'caissier' %}
                 <a href="{% url 'liste_medicaments' %}" class="menu-item {% if request.resolver_match.url_name == 'liste_medicaments' %}active{% endif %}">
                     <i class="fa-solid fa-capsules"></i>
                     <span class="menu-text">Médicaments</span>
@@ -48,11 +60,11 @@
                     <i class="fa-solid fa-boxes-stacked"></i>
                     <span class="menu-text">Stocks</span>
                 </a>
-                {% endif %}
-                <a href="{% url 'gestion_ventes' %}" class="menu-item {% if request.resolver_match.url_name == 'gestion_ventes' %}active{% endif %}">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span class="menu-text">Vente Rapide</span>
+                <a href="{% url 'inventaire_page' %}" class="menu-item {% if request.resolver_match.url_name == 'inventaire_page' %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span class="menu-text">Inventaire & Bilan</span>
                 </a>
+                {% endif %}
                 {% if request.user.is_superuser or request.user.last_name == 'admin' or request.user.last_name != 'caissier' %}
                 <a href="{% url 'alertes_page' %}" class="menu-item {% if request.resolver_match.url_name == 'alertes_page' %}active{% endif %}" style="position: relative;">
                     <i class="fa-solid fa-bell"></i>
@@ -326,11 +338,13 @@
                         }
                     });
                     const badge = document.getElementById('sidebar-alert-badge');
-                    if (totalAlertes > 0) {
-                        badge.innerText = totalAlertes;
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
+                    if (badge) {
+                        if (totalAlertes > 0) {
+                            badge.innerText = totalAlertes;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
                     }
                 });
         }
@@ -377,18 +391,74 @@
         // Appeler au chargement
         document.addEventListener('DOMContentLoaded', loadCurrentUser);
 
-        // Toggle pour la Sidebar (menu tiroir glissant)
-        function toggleSidebar() {
+        // ============================================================
+        // SIDEBAR — Ferme automatiquement au clic sur un lien de menu
+        //           Le bouton hamburger OUVRE seulement (ne ferme pas)
+        // ============================================================
+
+        function openSidebar() {
             const sidebar = document.getElementById('main-sidebar');
+            const workspace = document.querySelector('.main-workspace');
             const backdrop = document.getElementById('mobile-sidebar-backdrop');
-            if (!sidebar || !backdrop) return;
-            const isOpen = sidebar.classList.toggle('mobile-open');
-            if (isOpen) {
+            if (!sidebar) return;
+            sidebar.classList.remove('sidebar-collapsed');
+            if (workspace) workspace.classList.remove('sidebar-closed');
+            if (window.innerWidth <= 768 && backdrop) {
                 backdrop.classList.add('active');
-            } else {
-                backdrop.classList.remove('active');
             }
+            localStorage.setItem('sidebarClosed', '0');
         }
+
+        // Alias pour compatibilité avec onclick="toggleSidebar()" dans le HTML
+        function toggleSidebar() { openSidebar(); }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const workspace = document.querySelector('.main-workspace');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            if (!sidebar) return;
+            sidebar.classList.add('sidebar-collapsed');
+            if (workspace) workspace.classList.add('sidebar-closed');
+            if (backdrop) backdrop.classList.remove('active');
+            localStorage.setItem('sidebarClosed', '1');
+        }
+
+        // Restaurer l'état au chargement
+        (function restoreSidebarState() {
+            const sidebar = document.getElementById('main-sidebar');
+            const workspace = document.querySelector('.main-workspace');
+            if (!sidebar || !workspace) return;
+
+            // Sur mobile, toujours fermer par défaut
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('sidebar-collapsed');
+                workspace.classList.add('sidebar-closed');
+                return;
+            }
+
+            // Sur desktop, restaurer l'état sauvegardé
+            const saved = localStorage.getItem('sidebarClosed');
+            if (saved === '1') {
+                sidebar.classList.add('sidebar-collapsed');
+                workspace.classList.add('sidebar-closed');
+            }
+        })();
+
+        // Fermer sidebar automatiquement quand on clique sur un lien de menu
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.sidebar-menu .menu-item').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    // Stocker l'état "fermé" AVANT la navigation (sera lu au chargement suivant)
+                    localStorage.setItem('sidebarClosed', '1');
+                });
+            });
+
+            // Fermer le backdrop mobile si on clique dessus
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', closeSidebar);
+            }
+        });
     </script>
     {% block extra_js %}{% endblock %}
     {% block extra_html %}{% endblock %}

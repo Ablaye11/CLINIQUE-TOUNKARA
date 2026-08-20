@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="greenGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+  <!-- Outer Ring -->
+  <circle cx="50" cy="50" r="46" fill="#062319" stroke="url(#greenGradIcon)" stroke-width="6"/>
+  <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(16,185,129,0.3)" stroke-width="2"/>
+  
+  <!-- Silhouette & Stethoscope -->
+  <circle cx="50" cy="33" r="8.5" fill="#34d399"/>
+  <path d="M 32 59 C 32 46, 68 46, 68 59 C 68 64, 32 64, 32 59 Z" fill="#10b981"/>
+  <path d="M 31 38 C 23 45, 23 61, 35 69 C 45 76, 55 76, 65 69 C 77 61, 77 45, 69 38" fill="none" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="31" cy="36" r="2.5" fill="#6ee7b7"/>
+  <circle cx="69" cy="36" r="2.5" fill="#6ee7b7"/>
+  <path d="M 50 44 L 50 56 M 44 50 L 56 50" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

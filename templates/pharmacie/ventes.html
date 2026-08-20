@@ -4,45 +4,43 @@
 
 {% block extra_css %}
 <style>
-    /* ========================================
-       PAGE CAISSE — Vente Rapide (Layout fixe)
-       ======================================== */
-    html, body, .app-container {
-        height: 100vh;
-        overflow: hidden;
-    }
+    /* =============================================
+       CAISSE POS — Vente Rapide (Vert & Blanc)
+       Clinique Tounkara
+       ============================================= */
+    html, body, .app-container { height: 100vh; overflow: hidden; }
 
-    /* Override base .main-content for the POS page */
     .main-content {
         padding: 0.75rem 1.25rem !important;
         overflow: hidden !important;
         flex-grow: 1 !important;
         display: flex !important;
         flex-direction: column !important;
-        min-height: 0 !important; /* flex child must shrink */
+        min-height: 0 !important;
     }
 
-    /* Layout principal 2 colonnes */
+    /* Layout 2 colonnes */
     .pos-layout {
         display: grid;
-        grid-template-columns: 1fr 360px;
+        grid-template-columns: 1fr 380px;
         grid-template-rows: minmax(0, 1fr);
         gap: 1rem;
         flex: 1;
-        min-height: 0; /* Crucial pour que flex enfant respecte la hauteur */
-        height: 100% !important; /* Force le layout à occuper exactement la hauteur de main-content */
+        min-height: 0;
+        height: 100% !important;
         overflow: hidden;
     }
 
-    /* Panneau gauche : catalogue */
+    /* ─── PANNEAU GAUCHE : CATALOGUE ─── */
     .pos-products {
         display: flex;
         flex-direction: column;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 1rem;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 18px;
+        padding: 1rem 1rem 0.75rem;
         overflow: hidden;
+        box-shadow: 0 4px 20px rgba(6, 78, 59, 0.06);
     }
 
     .pos-products-header {
@@ -50,15 +48,25 @@
         align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.85rem;
         flex-shrink: 0;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e6f7ed;
     }
 
     .pos-products-header h3 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 800;
+        color: #064e3b;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pos-products-header h3 i {
+        color: #10b981;
+        font-size: 1.15rem;
     }
 
     .pos-product-list {
@@ -66,76 +74,76 @@
         min-height: 0;
         overflow-y: auto;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-        gap: 0.75rem;
-        padding-right: 2px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.65rem;
+        padding-right: 4px;
         align-content: start;
+        padding-bottom: 0.5rem;
     }
 
+    /* Carte Produit Vert & Blanc */
     .pos-product-card {
-        background: var(--bg-input);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 0.85rem;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 14px;
+        padding: 0.9rem;
         cursor: pointer;
-        transition: all 0.18s ease;
+        transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 110px;
+        min-height: 130px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(6, 78, 59, 0.04);
     }
 
+    .pos-product-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: #10b981;
+        opacity: 0;
+        transition: opacity 0.2s;
+        border-radius: 14px 14px 0 0;
+    }
+
+    .pos-product-card:hover::before { opacity: 1; }
+
     .pos-product-card:hover {
-        border-color: var(--color-primary);
-        background: rgba(99,102,241,0.08);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+        border-color: #10b981;
+        background: #f0fdf4;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
     }
 
     .pos-product-card h4 {
-        font-size: 0.82rem;
-        font-weight: 600;
-        line-height: 1.3;
-        margin-bottom: 0.35rem;
-        color: var(--text-primary);
+        font-size: 0.83rem;
+        font-weight: 800;
+        line-height: 1.35;
+        margin-bottom: 0.2rem;
+        color: #064e3b;
     }
 
     .pos-product-card .pos-cat {
-        font-size: 0.72rem;
-        color: var(--text-muted);
+        font-size: 0.7rem;
+        color: #047857;
         margin-bottom: 0.5rem;
+        font-weight: 600;
     }
 
     .pos-product-card .pos-price {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--color-primary);
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #10b981;
     }
 
     .pos-product-card .pos-stock-badge {
-        font-size: 0.7rem;
-        color: var(--text-muted);
-        margin-top: 0.2rem;
-    }
-
-    .pos-product-card .pos-add-btn {
-        width: 30px;
-        height: 30px;
-        background: var(--color-primary);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-        transition: background 0.15s;
-    }
-
-    .pos-product-card .pos-add-btn:hover {
-        background: #5053e6;
+        font-size: 0.68rem;
+        color: #059669;
+        margin-top: 0.15rem;
+        font-weight: 700;
     }
 
     .pos-product-card .pos-bottom {
@@ -145,85 +153,81 @@
         margin-top: 0.5rem;
     }
 
-    /* Panneau droit : Panier (Flexbox fixe) */
-    .pos-cart {
-        display: flex;
-        flex-direction: column;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        overflow: hidden;
-        min-height: 0;
-        height: 100%;
-        padding: 0 !important;
-        position: relative; /* Nécessaire pour les boutons flottants en position absolute */
-    }
-
-    /* Boutons flottants de navigation Haut/Bas dans la caisse */
-    .cart-scroll-nav {
-        position: absolute;
-        right: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        z-index: 10;
-        transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    .cart-scroll-nav.at-top { top: 55px; }
-    .cart-scroll-nav.at-bottom { bottom: 12px; }
-
-    .cart-scroll-nav button {
+    .pos-product-card .pos-add-btn {
         width: 32px;
         height: 32px;
-        border-radius: 10px;
-        border: 1px solid rgba(99,102,241,0.35);
-        background: rgba(13,20,35,0.82);
-        backdrop-filter: blur(8px);
-        color: var(--color-primary);
-        font-size: 0.8rem;
+        background: #10b981;
+        border: none;
+        border-radius: 9px;
+        color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.18s ease;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(0.85);
-    }
-
-    .cart-scroll-nav button.visible {
-        opacity: 1;
-        pointer-events: all;
-        transform: scale(1);
-    }
-
-    .cart-scroll-nav button:hover {
-        background: var(--color-primary);
-        color: white;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 12px rgba(99,102,241,0.5);
-        transform: scale(1.1);
-    }
-
-    .pos-cart-header {
-        padding: 1rem 1.2rem 0.75rem;
-        border-bottom: 1px solid var(--border-color);
+        font-size: 1rem;
         flex-shrink: 0;
+        transition: all 0.18s;
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+    }
+
+    .pos-product-card .pos-add-btn:hover {
+        background: #059669;
+        transform: scale(1.12);
+    }
+
+    /* ─── PANNEAU DROIT : PANIER ─── */
+    .pos-cart {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 18px;
+        overflow: hidden;
+        min-height: 0;
+        height: 100%;
+        padding: 0 !important;
+        position: relative;
+        box-shadow: 0 4px 20px rgba(6, 78, 59, 0.06);
+    }
+
+    /* Onglets Panier / Historique */
+    .pos-cart-header {
+        padding: 0;
+        display: flex;
+        gap: 0;
+        align-items: stretch;
+        border-bottom: 1px solid #e6f7ed;
+        flex-shrink: 0;
+        height: 50px;
+        background: #f0fdf4;
+    }
+
+    .pos-tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #047857;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 0.5rem;
-        background: rgba(99,102,241,0.04);
     }
 
-    .pos-cart-header h3 {
-        font-size: 0.98rem;
-        font-weight: 600;
-        flex-grow: 1;
+    .pos-tab:hover { color: #064e3b; background: rgba(16,185,129,0.08); }
+
+    .pos-tab.active {
+        border-bottom-color: #10b981 !important;
+        color: #064e3b !important;
+        background: #ffffff;
+        font-weight: 800;
     }
 
-    /* Zone scrollable UNIQUE : articles + client + paiement + total + bouton */
+    /* Zone scroll panier */
     .cart-scroll-body {
         flex: 1;
         min-height: 0;
@@ -232,490 +236,288 @@
         display: flex;
         flex-direction: column;
         scrollbar-width: thin;
-        scrollbar-color: rgba(99,102,241,0.25) transparent;
+        scrollbar-color: #a7f3d0 transparent;
     }
 
-    /* Articles du panier */
     .cart-items-wrapper {
-        padding: 0.75rem 1.2rem 0;
-        flex-shrink: 0; /* Prend juste la place nécessaire */
+        padding: 0.85rem 1.15rem 0;
+        flex-shrink: 0;
     }
 
+    /* Items du panier */
     .cart-item {
         display: grid;
         grid-template-columns: 1fr auto auto auto;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.6rem 0;
-        border-bottom: 1px solid var(--border-color);
-        min-width: 0; /* Permet le rétrécissement de l'item */
+        padding: 0.65rem 0;
+        border-bottom: 1px solid #e6f7ed;
+        min-width: 0;
     }
 
-    .cart-item > div:first-child {
-        min-width: 0; /* Permet à la colonne du nom d'être réduite */
-    }
-
-    .cart-item:last-child {
-        border-bottom: none;
-    }
+    .cart-item > div:first-child { min-width: 0; }
+    .cart-item:last-child { border-bottom: none; }
 
     .cart-item h5 {
-        font-size: 0.82rem;
-        font-weight: 600;
+        font-size: 0.83rem;
+        font-weight: 800;
         line-height: 1.3;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; /* Tronque le nom s'il est trop long au lieu de pousser les colonnes */
+        text-overflow: ellipsis;
+        color: #064e3b;
     }
 
     .cart-item small {
         display: block;
-        color: var(--text-muted);
-        font-size: 0.72rem;
-    }
-
-    .cart-item-qty {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .cart-item-qty button {
-        width: 22px;
-        height: 22px;
-        border-radius: 5px;
-        background: var(--bg-main);
-        border: 1px solid var(--border-color);
-        color: white;
-        cursor: pointer;
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .cart-item-qty button:hover {
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-    }
-
-    .cart-item-qty span {
-        width: 24px;
-        text-align: center;
-        font-size: 0.88rem;
+        color: #047857;
+        font-size: 0.7rem;
         font-weight: 600;
     }
 
+    .cart-item-qty { display: flex; align-items: center; gap: 0.25rem; }
+
+    .cart-item-qty button {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: #f0fdf4;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+    .cart-item-qty button:hover {
+        border-color: #10b981;
+        color: white;
+        background: #10b981;
+    }
+
+    .cart-item-qty span {
+        width: 26px;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #064e3b;
+    }
+
     .cart-item-total {
-        font-weight: 700;
-        font-size: 0.82rem;
+        font-weight: 800;
+        font-size: 0.85rem;
         text-align: right;
-        color: var(--text-primary);
-        min-width: 60px;
+        color: #10b981;
+        min-width: 62px;
     }
 
     .cart-item-remove {
         background: none;
         border: none;
-        color: var(--text-muted);
+        color: #94a3b8;
         cursor: pointer;
         font-size: 0.85rem;
-        padding: 0.1rem 0.2rem;
-        border-radius: 4px;
+        padding: 0.15rem 0.25rem;
+        border-radius: 5px;
         transition: color 0.15s;
     }
 
-    .cart-item-remove:hover {
-        color: var(--color-danger);
-    }
+    .cart-item-remove:hover { color: #dc2626; }
 
-    /* Séparateur avant footer */
-    .cart-footer-divider {
-        height: 2px;
-        background: var(--border-color);
-        margin: 0.5rem 0 0;
-        flex-shrink: 0;
-    }
-
-    /* Footer dans le scroll (client + paiement + total + bouton) */
+    /* Footer panier : client, paiement, total, bouton */
     .pos-cart-footer {
         flex-shrink: 0;
-        padding: 0.85rem 1.2rem 1.25rem;
-        background: rgba(0,0,0,0.08);
-        margin-top: auto; /* Pousse le footer vers le bas si peu d'articles */
+        padding: 0.9rem 1.15rem 1.1rem;
+        background: #f0fdf4;
+        border-top: 1px solid #a7f3d0;
+        margin-top: auto;
     }
 
-    /* Suppression de l'ancien wrapper inner (plus nécessaire) */
-    .pos-cart-footer-inner {
-        padding: 0;
-    }
-
-    /* Section Client dépliable */
     .pos-client-bar {
-        background: rgba(99,102,241,0.07);
-        border: 1px solid rgba(99,102,241,0.15);
-        border-radius: 8px;
-        padding: 0.6rem 0.85rem;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 0.65rem 0.9rem;
         margin-bottom: 0.75rem;
         cursor: pointer;
         user-select: none;
+        transition: background 0.2s;
     }
+
+    .pos-client-bar:hover { background: #e6f7ed; }
 
     .pos-client-bar-top {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--color-primary);
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #047857;
     }
 
-    .pos-client-bar-top i.chevron {
-        transition: transform 0.2s;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
+    .pos-client-bar-top i.chevron { transition: transform 0.2s; font-size: 0.75rem; color: #10b981; }
 
-    /* Grille formulaire client — animation fluide */
     .client-form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.45rem;
-        margin-top: 0;
-        padding-top: 0;
-        border-top: 1px solid rgba(99,102,241,0.12);
         max-height: 0;
         overflow: hidden;
-        transition: max-height 0.3s ease, padding-top 0.3s ease, margin-top 0.3s ease;
+        transition: max-height 0.3s ease, margin-top 0.3s ease;
     }
 
-    .client-form-grid.open {
-        max-height: 300px;
-        margin-top: 0.65rem;
-        padding-top: 0.65rem;
-    }
+    .client-form-grid.open { max-height: 300px; margin-top: 0.65rem; }
 
-    .client-form-grid .cfield {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
+    .cfield { display: flex; flex-direction: column; gap: 0.25rem; }
+    .cfield.full { grid-column: span 2; }
 
-    .client-form-grid .cfield.full {
-        grid-column: span 2;
-    }
+    .cfield label { font-size: 0.7rem; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.04em; }
 
-    .client-form-grid label {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-        font-weight: 500;
-    }
-
-    .client-form-grid input {
-        background: var(--bg-main);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 0.35rem 0.55rem;
-        color: white;
+    .cfield input {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 7px;
+        padding: 0.42rem 0.7rem;
+        color: #064e3b;
         font-size: 0.82rem;
         outline: none;
-        width: 100%;
-        transition: border-color 0.15s;
+        transition: border-color 0.2s;
     }
 
-    .client-form-grid input:focus {
-        border-color: var(--color-primary);
-    }
+    .cfield input:focus { border-color: #10b981; }
 
     /* Mode de paiement */
     .pos-payment-row {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
+        gap: 0.75rem;
+        margin-bottom: 0.85rem;
+        flex-wrap: wrap;
     }
 
     .pos-payment-row label {
-        font-size: 0.78rem;
-        color: var(--text-secondary);
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #047857;
         white-space: nowrap;
-        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .pos-payment-row select {
-        flex: 1;
-        background: var(--bg-input);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 0.38rem 0.6rem;
-        color: white;
-        font-size: 0.82rem;
+        flex-grow: 1;
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 9px;
+        padding: 0.45rem 0.85rem;
+        color: #064e3b;
+        font-size: 0.85rem;
+        font-weight: 600;
         outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s;
     }
 
-    /* Total row */
-    .pos-totals {
+    .pos-payment-row select:focus { border-color: #10b981; }
+
+    /* Ligne Total */
+    .pos-total-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 0.65rem 0.9rem;
+        background: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #a7f3d0;
     }
 
-    .pos-totals .label {
+    .pos-total-label {
         font-size: 0.82rem;
-        color: var(--text-secondary);
+        font-weight: 700;
+        color: #047857;
     }
 
-    .pos-totals .amount {
-        font-size: 1.45rem;
-        font-weight: 800;
-        color: var(--color-success);
-        letter-spacing: -0.5px;
+    .pos-total-label small { display: block; font-size: 0.7rem; color: #10b981; margin-top: 1px; }
+
+    .pos-total-amount {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #10b981;
+        letter-spacing: -0.03em;
     }
 
-    .pos-totals .count {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
-
+    /* Bouton Valider */
     .btn-validate {
         width: 100%;
-        background: linear-gradient(135deg, var(--color-success), #0da070);
+        padding: 0.85rem;
+        background: #10b981;
         color: white;
         border: none;
         border-radius: 12px;
-        padding: 0.95rem 1rem;
-        font-size: 1.05rem;
-        font-weight: 700;
+        font-size: 1rem;
+        font-weight: 800;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.65rem;
+        gap: 0.6rem;
         transition: all 0.22s ease;
-        box-shadow: 0 4px 18px rgba(16,185,129,0.35);
-        letter-spacing: 0.02em;
-        margin-top: 0.5rem;
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+        letter-spacing: 0.03em;
         position: relative;
         z-index: 2;
     }
 
     .btn-validate:hover {
+        background: #059669;
         transform: translateY(-2px);
-        box-shadow: 0 8px 28px rgba(16,185,129,0.5);
-        background: linear-gradient(135deg, #12c988, #0bbf88);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
     }
 
-    .btn-validate:active {
-        transform: translateY(0);
-        box-shadow: 0 3px 10px rgba(16,185,129,0.3);
-    }
+    .btn-validate:active { transform: translateY(0); }
 
     .btn-validate:disabled {
-        opacity: 0.45;
+        opacity: 0.4;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
     }
 
-    /* Empty cart message */
+    /* Panier vide */
     .cart-empty-msg {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: var(--text-muted);
+        color: #047857;
         text-align: center;
         gap: 0.75rem;
         padding: 2rem;
     }
 
-    .cart-empty-msg i {
-        font-size: 2.5rem;
-        opacity: 0.3;
-    }
+    .cart-empty-msg i { font-size: 2.8rem; opacity: 0.35; color: #10b981; }
+    .cart-empty-msg p { font-size: 0.85rem; font-weight: 600; color: #047857; line-height: 1.5; }
 
-    .cart-empty-msg p {
-        font-size: 0.85rem;
-    }
-
-    /* Adaptabilité responsive de la caisse POS */
+    /* Responsive mobile */
     @media (max-width: 768px) {
-        .pos-layout {
-            grid-template-columns: 1fr !important;
-            height: auto !important;
-            overflow-y: auto !important;
-            gap: 1.25rem;
-        }
-
-        /* Permettre à la page POS de défiler verticalement sur mobile */
-        .main-content {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-        }
-
-        .pos-products {
-            width: 100%;
-            height: auto !important;
-            min-height: auto !important;
-            overflow: visible !important;
-        }
-
-        .pos-cart {
-            width: 100%;
-            height: auto !important;
-            min-height: auto;
-            max-height: none !important;
-            overflow: visible !important;
-            position: relative;
-        }
-
-        .pos-products-header,
-        .pos-cart-header {
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
-        .pos-products-header h3 {
-            white-space: normal;
-            flex: 1 1 100%;
-            margin-bottom: 0.5rem;
-        }
-
-        .pos-products-header > div {
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-
-        .pos-product-list {
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            max-height: calc(100vh - 24rem);
-            overflow-y: auto;
-            padding-right: 0.3rem;
-        }
-
-        .pos-tab {
-            flex: 1 1 50%;
-            min-width: 0;
-            padding: 0.65rem 0.5rem;
-        }
-
-        .cart-scroll-body {
-            max-height: calc(100vh - 24rem);
-            overflow-y: auto;
-            padding-bottom: 7rem;
-        }
-
-        .cart-items-wrapper {
-            padding: 0.75rem 0.85rem 1rem;
-            min-height: 1px;
-        }
-
-        #history-scroll-body {
-            max-height: calc(100vh - 24rem);
-            overflow-y: auto;
-            padding-bottom: 7rem;
-        }
-
-        .cart-item {
-            grid-template-columns: 1fr auto;
-            row-gap: 0.5rem;
-            align-items: flex-start;
-        }
-
-        .cart-item .cart-item-total {
-            min-width: auto;
-            text-align: right;
-        }
-
-        .cart-item > div:first-child {
-            min-width: 0;
-        }
-
-        .cart-scroll-body {
-            max-height: none;
-            overflow-y: auto;
-            padding-bottom: 5.5rem; /* Laisser de la place sous le contenu pour le footer sticky */
-        }
-
-        .cart-items-wrapper {
-            padding: 0.75rem 0.85rem 1rem;
-            min-height: 1px;
-        }
-
-        .pos-payment-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .pos-payment-row label {
-            white-space: normal;
-        }
-
-        .client-form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .client-form-grid .cfield.full {
-            grid-column: span 1;
-        }
-
-        .pos-cart {
-            overflow: visible !important;
-            position: static !important;
-        }
-
-        .pos-products {
-            overflow: visible !important;
-        }
-
-        .pos-layout {
-            overflow: visible !important;
-        }
-
-        .pos-cart-footer {
-            position: relative !important;
-            bottom: auto !important;
-            background: rgba(15, 23, 42, 0.96);
-            z-index: 5;
-            width: 100%;
-            margin-top: 0.75rem;
-        }
-    }
-
-    /* Onglets du panier */
-    .pos-tab {
-        flex: 1;
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid transparent;
-        color: var(--text-muted);
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .pos-tab:hover {
-        color: var(--text-primary);
-        background: rgba(255,255,255,0.02);
-    }
-
-    .pos-tab.active {
-        border-bottom-color: var(--color-primary) !important;
-        color: var(--text-primary) !important;
-        background: rgba(99,102,241,0.04);
-    }
-
-    @keyframes pulse-danger {
-        0% { transform: scale(1); opacity: 0.9; }
-        50% { transform: scale(1.12); opacity: 1; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-        100% { transform: scale(1); opacity: 0.9; }
+        .pos-layout { grid-template-columns: 1fr !important; height: auto !important; overflow-y: auto !important; gap: 1rem; }
+        .main-content { overflow-y: auto !important; overflow-x: hidden !important; }
+        .pos-products { width: 100%; height: auto !important; min-height: auto !important; overflow: visible !important; }
+        .pos-cart { width: 100%; height: auto !important; max-height: none !important; overflow: visible !important; position: relative; }
+        .pos-product-list { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); max-height: calc(100vh - 24rem); overflow-y: auto; }
+        .pos-tab { flex: 1 1 50%; }
+        .cart-scroll-body { max-height: calc(100vh - 24rem); overflow-y: auto; padding-bottom: 7rem; }
+        .cart-items-wrapper { padding: 0.75rem 0.85rem 1rem; }
+        .pos-payment-row { flex-direction: column; align-items: stretch; }
+        .client-form-grid { grid-template-columns: 1fr; }
+        .cfield.full { grid-column: span 1; }
+        .pos-cart-footer { position: relative !important; bottom: auto !important; width: 100%; margin-top: 0.75rem; }
     }
 </style>
 {% endblock %}
@@ -872,28 +674,28 @@
 
 <!-- Modal de Confirmation d'Annulation de Facture -->
 <div class="modal" id="confirm-cancel-modal">
-    <div class="modal-content" style="max-width: 480px; border: 1px solid rgba(239, 68, 68, 0.25); box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(239, 68, 68, 0.15); background: #0f172a;">
-        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 1.25rem 1.5rem;">
-            <h3 style="color: var(--color-danger); display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700;">
-                <i class="fa-solid fa-triangle-exclamation" style="animation: pulse-danger 2s infinite; color: var(--color-danger);"></i>
+    <div class="modal-content" style="max-width: 480px; border: 1px solid #fca5a5; box-shadow: 0 20px 40px rgba(4,120,87,0.15); background: #ffffff; color: #064e3b;">
+        <div class="modal-header" style="border-bottom: 1px solid #fee2e2; padding: 1.25rem 1.5rem; background: #fef2f2; border-radius: 20px 20px 0 0;">
+            <h3 style="color: #dc2626; display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 800;">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #dc2626;"></i>
                 Annuler la Facture
             </h3>
-            <button class="modal-close" onclick="closeCancelSaleModal()">&times;</button>
+            <button class="modal-close" onclick="closeCancelSaleModal()" style="color: #dc2626;">&times;</button>
         </div>
-        <div class="modal-body" style="padding: 2rem 1.5rem; text-align: center;">
-            <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 1.25rem;">
-                Êtes-vous sûr de vouloir annuler la facture <strong id="cancel-invoice-num" style="color: var(--color-danger); font-family: monospace; font-size: 1.15rem; background: rgba(239, 68, 68, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2); letter-spacing: 0.5px;"></strong> ?
+        <div class="modal-body" style="padding: 1.75rem 1.5rem; text-align: center;">
+            <p style="font-size: 1.05rem; line-height: 1.6; color: #064e3b; margin-bottom: 1.25rem; font-weight: 600;">
+                Êtes-vous sûr de vouloir annuler la facture <strong id="cancel-invoice-num" style="color: #dc2626; font-family: monospace; font-size: 1.15rem; background: #fee2e2; padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid #fca5a5; letter-spacing: 0.5px;"></strong> ?
             </p>
-            <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; display: inline-flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.02); padding: 0.85rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); text-align: left; width: 100%; box-sizing: border-box;">
-                <i class="fa-solid fa-boxes-stacked" style="color: var(--color-success); font-size: 1.2rem; flex-shrink: 0;"></i>
+            <div style="font-size: 0.88rem; color: #047857; line-height: 1.5; display: flex; align-items: center; gap: 0.65rem; background: #e6f7ed; padding: 0.85rem 1.25rem; border-radius: 10px; border: 1px solid #a7f3d0; text-align: left; width: 100%; box-sizing: border-box; font-weight: 600;">
+                <i class="fa-solid fa-boxes-stacked" style="color: #10b981; font-size: 1.3rem; flex-shrink: 0;"></i>
                 <span>Cette action restituera immédiatement le stock des médicaments vendus.</span>
             </div>
         </div>
-        <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding: 1.25rem 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
-            <button class="btn btn-secondary" onclick="closeCancelSaleModal()" style="border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); padding: 0.6rem 1.2rem; font-weight: 500; font-size: 0.88rem;">
+        <div class="modal-footer" style="border-top: 1px solid #e6f7ed; padding: 1.25rem 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end; background: #f0fdf4; border-radius: 0 0 20px 20px;">
+            <button class="btn btn-secondary" onclick="closeCancelSaleModal()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 0.88rem;">
                 Non, garder
             </button>
-            <button class="btn btn-danger" id="btn-confirm-cancel-execute" style="background: var(--color-danger); color: white; border: none; padding: 0.6rem 1.2rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); font-size: 0.88rem;">
+            <button class="btn btn-danger" id="btn-confirm-cancel-execute" style="background: #dc2626; color: white; border: none; padding: 0.6rem 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); font-size: 0.88rem;">
                 <i class="fa-solid fa-trash-can"></i> Oui, annuler
             </button>
         </div>
@@ -1164,17 +966,18 @@
                 showReceipt(data.vente_id);
                 cart = [];
                 // Remettre à zéro les champs client après la vente
-                document.getElementById('pos-client-name').value = 'Passant';
-                document.getElementById('pos-client-adresse').value = '';
-                document.getElementById('pos-client-age').value = '';
-                document.getElementById('pos-client-telephone').value = '';
-                document.getElementById('pos-client-summary').innerText = 'Passant';
-                document.getElementById('client-info-form').classList.remove('open');
-                document.getElementById('client-toggle-icon').style.transform = 'rotate(0deg)';
+                const elName = document.getElementById('pos-client-name'); if (elName) elName.value = 'Passant';
+                const elAdr = document.getElementById('pos-client-adresse'); if (elAdr) elAdr.value = '';
+                const elAge = document.getElementById('pos-client-age'); if (elAge) elAge.value = '';
+                const elTel = document.getElementById('pos-client-telephone'); if (elTel) elTel.value = '';
+                const elSum = document.getElementById('pos-client-summary'); if (elSum) elSum.innerText = 'Passant';
+                const elForm = document.getElementById('client-info-form'); if (elForm) elForm.classList.remove('open');
+                const elIcon = document.getElementById('client-toggle-icon'); if (elIcon) elIcon.style.transform = 'rotate(0deg)';
                 renderCart();
                 loadPOSCatalog(); // Recharger pour avoir les stocks à jour
                 updateHistoryBadge(); // Mettre à jour le badge d'historique
-                if (document.getElementById('history-scroll-body').style.display !== 'none') {
+                const histBody = document.getElementById('history-scroll-body');
+                if (histBody && histBody.style.display !== 'none') {
                     loadDailyHistory(); // Recharger si l'onglet historique est actif
                 }
             } else {
@@ -1342,30 +1145,31 @@
         
         dailyVentes.forEach(vente => {
             const card = document.createElement('div');
-            card.style.background = 'var(--bg-input)';
-            card.style.border = '1px solid ' + (vente.est_annulee ? 'rgba(239, 68, 68, 0.2)' : 'var(--border-color)');
+            card.style.background = vente.est_annulee ? '#fef2f2' : '#ffffff';
+            card.style.border = '1px solid ' + (vente.est_annulee ? '#fca5a5' : '#a7f3d0');
             card.style.borderRadius = '12px';
             card.style.padding = '0.75rem';
             card.style.display = 'flex';
             card.style.flexDirection = 'column';
             card.style.gap = '0.5rem';
             card.style.transition = 'all 0.2s';
+            card.style.boxShadow = '0 2px 8px rgba(6, 78, 59, 0.04)';
             
             if (vente.est_annulee) {
-                card.style.opacity = '0.7';
+                card.style.opacity = '0.85';
             }
             
             let actionBtn = '';
             if (!vente.est_annulee) {
                 actionBtn = `
-                    <button class="btn btn-secondary" onclick="confirmCancelSale(${vente.id}, '${vente.numero_facture}')" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; color: var(--color-danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);" title="Annuler la vente">
+                    <button class="btn btn-secondary" onclick="confirmCancelSale(${vente.id}, '${vente.numero_facture}')" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; color: #dc2626; border-color: #fca5a5; background: #fee2e2; font-weight: 700;" title="Annuler la vente">
                         <i class="fa-solid fa-ban"></i> Annuler
                     </button>
                 `;
             }
             
             let linesHtml = vente.lignes.map(l => `
-                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-secondary); margin-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.02); padding-bottom: 2px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#047857; font-weight:600; margin-bottom: 2px; border-bottom: 1px solid #e6f7ed; padding-bottom: 2px;">
                     <span>${l.medicament_nom} x${l.quantite}</span>
                     <span>${new Intl.NumberFormat('fr-FR').format(l.total)} F</span>
                 </div>
@@ -1373,30 +1177,31 @@
             
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.75rem; font-weight:700; color:var(--color-primary);">${vente.numero_facture.split('-')[2] ? 'N°' + vente.numero_facture.split('-')[2] : vente.numero_facture}</span>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">${vente.date_vente.split(' ')[1]}</span>
+                    <span style="font-size:0.75rem; font-weight:800; color:#10b981;">${vente.numero_facture.split('-')[2] ? 'N°' + vente.numero_facture.split('-')[2] : vente.numero_facture}</span>
+                    <span style="font-size:0.7rem; color:#047857; font-weight:600;">${vente.date_vente.split(' ')[1]}</span>
                 </div>
                 
                 <div style="display:flex; justify-content:space-between; align-items:baseline;">
                     <div>
-                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${vente.client_nom}</div>
-                        <div style="font-size:0.72rem; color:var(--text-muted);">${vente.mode_paiement}</div>
+                        <div style="font-size:0.82rem; font-weight:800; color:#064e3b;">${vente.client_nom}</div>
+                        <div style="font-size:0.72rem; color:#047857; font-weight:600;">${vente.mode_paiement}</div>
                     </div>
-                    <div style="font-size:0.95rem; font-weight:800; color:${vente.est_annulee ? 'var(--color-danger)' : 'var(--color-success)'};">
+                    <div style="font-size:0.95rem; font-weight:900; color:${vente.est_annulee ? '#dc2626' : '#10b981'};">
                         ${new Intl.NumberFormat('fr-FR').format(vente.total)} F
+                        ${vente.est_annulee ? '<span style="font-size:0.68rem; display:block; text-align:right;">(ANNULÉE)</span>' : ''}
                     </div>
                 </div>
                 
-                <div class="vente-detail-items" style="border-top:1px dashed var(--border-color); padding-top:0.4rem; margin-top:0.2rem; display:none;">
+                <div class="vente-detail-items" style="border-top:1px dashed #a7f3d0; padding-top:0.4rem; margin-top:0.2rem; display:none;">
                     ${linesHtml}
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.03); padding-top:0.4rem; margin-top:0.1rem;">
-                    <button class="btn btn-secondary" onclick="toggleVenteDetails(this)" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; border:none; background:transparent; color:var(--text-muted);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e6f7ed; padding-top:0.4rem; margin-top:0.1rem;">
+                    <button class="btn btn-secondary" onclick="toggleVenteDetails(this)" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; border:none; background:transparent; color:#047857; font-weight:700;">
                         <i class="fa-solid fa-angle-down"></i> Détails
                     </button>
                     <div style="display:flex; gap:0.35rem;">
-                        <button class="btn btn-secondary" onclick="showReceipt(${vente.id})" style="padding: 0.25rem 0.5rem; font-size: 0.72rem;" title="Imprimer">
+                        <button class="btn btn-secondary" onclick="showReceipt(${vente.id})" style="padding: 0.25rem 0.5rem; font-size: 0.72rem; background:#f0fdf4; border:1px solid #a7f3d0; color:#047857;" title="Imprimer">
                             <i class="fa-solid fa-print"></i>
                         </button>
                         ${actionBtn}

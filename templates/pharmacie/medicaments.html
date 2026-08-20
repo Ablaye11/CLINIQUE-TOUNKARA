@@ -4,11 +4,10 @@
 
 {% block extra_css %}
 <style>
-    /* ======================================
-       PAGE MÉDICAMENTS — layout scrollable
-       ====================================== */
+    /* ========================================================
+       PAGE MÉDICAMENTS — 100% VISIBLE SANS SCROLL HORIZONTAL
+       ======================================================== */
 
-    /* La page doit scroller verticalement de manière fluide */
     .main-workspace {
         min-width: 0 !important;
     }
@@ -16,81 +15,59 @@
     .main-content {
         min-width: 0 !important;
         overflow-x: hidden !important;
-        overflow-y: auto !important;   /* scroll vertical naturel */
+        overflow-y: auto !important;
+        padding: 1.25rem !important;
     }
 
-    /* La table card prend 100% de la largeur dispo */
     .card-table {
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
 
-    /* Le tableau lui-même est scrollable en X si l'écran est petit */
+    /* Tableau responsive ajusté à 100% de l'écran - PAS de scroll gauche/droite */
     #meds-table {
-        table-layout: fixed !important;
+        table-layout: auto !important;
         width: 100% !important;
-        min-width: 1100px !important;
+        min-width: 0 !important;
     }
 
-    #meds-table th, #meds-table td {
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-    }
-
-    /* La zone de scroll X est sur le wrapper, PAS sur le tableau entier */
-    .table-responsive {
-        overflow-x: auto !important;
-        overflow-y: visible !important; /* PAS de max-height ici = page entière scrollable */
-        width: 100%;
-    }
-
-    /* Boutons d'action dans le tableau */
-    .tbl-action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 30px;
-        height: 30px;
-        border-radius: 7px;
-        border: 1px solid var(--border-color);
-        background: transparent;
-        color: var(--text-secondary);
-        cursor: pointer;
-        font-size: 0.82rem;
-        transition: all 0.18s ease;
-    }
-
-    .tbl-action-btn:hover {
-        background: rgba(99,102,241,0.12);
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-    }
-
-    .tbl-action-btn.danger:hover {
-        background: rgba(239,68,68,0.12);
-        border-color: var(--color-danger);
-        color: var(--color-danger);
-    }
-
-    /* Badge statut */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.22rem 0.65rem;
-        border-radius: 20px;
-        font-size: 0.72rem;
-        font-weight: 600;
+    #meds-table th {
+        background: #e6f7ed !important;
+        color: #047857 !important;
+        font-weight: 800;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.75rem 0.5rem !important;
+        border-bottom: 2px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 10;
         white-space: nowrap;
     }
 
-    .status-badge.disponible  { background: rgba(16,185,129,0.12); color: #10b981; }
-    .status-badge.faible      { background: rgba(251,191,36,0.12);  color: #f59e0b; }
-    .status-badge.rupture     { background: rgba(239,68,68,0.12);   color: #ef4444; }
-    .status-badge.expire      { background: rgba(107,114,128,0.15); color: #9ca3af; }
+    #meds-table td {
+        padding: 0.6rem 0.5rem !important;
+        border-bottom: 1px solid #e6f7ed;
+        color: #064e3b;
+        vertical-align: middle;
+        font-size: 0.82rem;
+    }
+
+    .table-responsive {
+        overflow-x: hidden !important; /* ✅ PAS de scroll horizontal gauche/droite */
+        overflow-y: auto !important;
+        max-height: calc(100vh - 280px) !important;
+        width: 100%;
+    }
+
+    .btn-action-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
 </style>
 {% endblock %}
 
@@ -98,36 +75,36 @@
 <!-- Page Header -->
 <div class="table-header" style="margin-bottom: 1rem;">
     <div>
-        <h2 style="font-size: 1.4rem; font-weight: 700;">💊 Gestion des Médicaments</h2>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Recherche, modification rapide, filtres et scan code-barres</p>
+        <h2 style="font-size: 1.35rem; font-weight: 700;">💊 Gestion des Médicaments</h2>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.2rem;">Catalogue complet, modification rapide et scan code-barres</p>
     </div>
     <div class="table-actions">
-        <button class="btn btn-secondary" onclick="generateDemoMedicaments()" title="Générer Médocs Démo" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); color: var(--color-primary);">
+        <button class="btn btn-secondary" onclick="generateDemoMedicaments()" title="Générer Médocs Démo" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); color: var(--color-primary); padding: 0.5rem 0.85rem; font-size: 0.82rem;">
             <i class="fa-solid fa-database"></i> <span>Démo</span>
         </button>
-        <button class="btn btn-secondary" onclick="openImportCSVModal()" title="Importer CSV / Excel" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #10b981;">
-            <i class="fa-solid fa-file-arrow-up"></i> <span>Importer CSV</span>
+        <button class="btn btn-secondary" onclick="openImportCSVModal()" title="Importer CSV / Excel" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #10b981; padding: 0.5rem 0.85rem; font-size: 0.82rem;">
+            <i class="fa-solid fa-file-arrow-up"></i> <span>Importer</span>
         </button>
-        <button class="btn btn-secondary" onclick="openBarcodeScannerModal()" title="Scanner Code-barres">
+        <button class="btn btn-secondary" onclick="openBarcodeScannerModal()" title="Scanner Code-barres" style="padding: 0.5rem 0.85rem; font-size: 0.82rem;">
             <i class="fa-solid fa-barcode"></i> <span>Scanner</span>
         </button>
-        <button class="btn btn-primary" onclick="openAddMedicamentModal()">
+        <button class="btn btn-primary" onclick="openAddMedicamentModal()" style="padding: 0.5rem 0.85rem; font-size: 0.82rem;">
             <i class="fa-solid fa-plus"></i> Nouveau Médicament
         </button>
     </div>
 </div>
 
 <!-- Filters Bar -->
-<div class="card-table" style="margin-bottom: 1rem; padding: 0.85rem 1.25rem;">
-    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end;">
-        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 2 1 240px;">
-            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Recherche instantanée</label>
-            <input type="text" id="filter-search" class="input-control" placeholder="🔍  Nom, code, catégorie..." oninput="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+<div class="card-table" style="margin-bottom: 1rem; padding: 0.75rem 1rem;">
+    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: flex-end;">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 2 1 200px;">
+            <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Recherche instantanée</label>
+            <input type="text" id="filter-search" class="input-control" placeholder="🔍  Nom, code, catégorie..." oninput="loadMedicaments()" style="padding: 0.45rem 0.75rem; font-size: 0.82rem; width: 100%;">
         </div>
 
-        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 140px;">
-            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Catégorie</label>
-            <select id="filter-categorie" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 120px;">
+            <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Catégorie</label>
+            <select id="filter-categorie" class="input-control" onchange="loadMedicaments()" style="padding: 0.45rem 0.75rem; font-size: 0.82rem; width: 100%;">
                 <option value="">Toutes</option>
                 {% for cat in categories %}
                 <option value="{{ cat }}">{{ cat }}</option>
@@ -135,9 +112,9 @@
             </select>
         </div>
 
-        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 120px;">
-            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Expiration</label>
-            <select id="filter-expiration" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 110px;">
+            <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Expiration</label>
+            <select id="filter-expiration" class="input-control" onchange="loadMedicaments()" style="padding: 0.45rem 0.75rem; font-size: 0.82rem; width: 100%;">
                 <option value="">Tous</option>
                 <option value="expired">Expirés</option>
                 <option value="proche">≤ 30 jours</option>
@@ -146,9 +123,9 @@
             </select>
         </div>
 
-        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 120px;">
-            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Statut</label>
-            <select id="filter-statut" class="input-control" onchange="loadMedicaments()" style="padding: 0.5rem 0.85rem; font-size: 0.875rem; width: 100%;">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1 1 110px;">
+            <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Statut</label>
+            <select id="filter-statut" class="input-control" onchange="loadMedicaments()" style="padding: 0.45rem 0.75rem; font-size: 0.82rem; width: 100%;">
                 <option value="">Tous</option>
                 <option value="disponible">✅ Disponible</option>
                 <option value="stock faible">⚠️ Stock faible</option>
@@ -157,16 +134,16 @@
             </select>
         </div>
 
-        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1.2 1 180px;">
-            <label style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Trier par</label>
-            <div style="display: flex; gap: 0.4rem; width: 100%;">
-                <select id="sort-by" class="input-control" style="flex-grow: 1; padding: 0.5rem 0.85rem; font-size: 0.875rem;" onchange="loadMedicaments()">
+        <div class="form-group" style="gap: 0.2rem; margin: 0; flex: 1.2 1 160px;">
+            <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Trier par</label>
+            <div style="display: flex; gap: 0.3rem; width: 100%;">
+                <select id="sort-by" class="input-control" style="flex-grow: 1; padding: 0.45rem 0.75rem; font-size: 0.82rem;" onchange="loadMedicaments()">
                     <option value="nom">Nom</option>
                     <option value="stock">Stock</option>
                     <option value="prix_vente">Prix vente</option>
                     <option value="date_expiration">Expiration</option>
                 </select>
-                <button class="btn btn-secondary" id="btn-sort-dir" onclick="toggleSortDirection()" style="padding: 0 0.65rem; flex-shrink: 0; height: 35px; display: inline-flex; align-items: center; justify-content: center;">
+                <button class="btn btn-secondary" id="btn-sort-dir" onclick="toggleSortDirection()" style="padding: 0 0.5rem; flex-shrink: 0; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
                     <i class="fa-solid fa-sort-down"></i>
                 </button>
             </div>
@@ -174,28 +151,40 @@
     </div>
 </div>
 
-<!-- Main Table -->
+<!-- Main Table (100% visible sans scroll horizontal) -->
 <div class="card-table" style="padding: 0; overflow: hidden;">
     <div class="table-responsive">
         <table class="table-custom" id="meds-table">
             <thead>
                 <tr>
-                    <th style="width: 120px;">Code</th>
-                    <th>Nom du médicament</th>
-                    <th style="width: 120px;">Catégorie</th>
-                    <th style="text-align: center; width: 75px;">Stock</th>
-                    <th style="text-align: right; width: 100px;">Prix achat</th>
-                    <th style="text-align: right; width: 100px;">Prix vente</th>
-                    <th style="width: 105px;">Expiration</th>
-                    <th style="width: 160px;">Fournisseur</th>
-                    <th style="width: 110px;">Statut</th>
-                    <th style="text-align: right; width: 85px;">Actions</th>
+                    <th style="width: 11%;">Code</th>
+                    <th style="width: 22%;">Médicament</th>
+                    <th style="width: 11%;">Catégorie</th>
+                    <th style="text-align: center; width: 6%;">Stock</th>
+                    <th style="text-align: right; width: 9%;">P. Achat</th>
+                    <th style="text-align: right; width: 9%;">P. Vente</th>
+                    <th style="width: 9%;">Expire</th>
+                    <th style="width: 11%;">Fournisseur</th>
+                    <th style="text-align: center; width: 7%;">Statut</th>
+                    <th style="text-align: center; width: 5%;">Act.</th>
                 </tr>
             </thead>
             <tbody id="medicaments-tbody">
                 <!-- Chargé dynamiquement par JS -->
             </tbody>
         </table>
+    </div>
+
+    <!-- Barre d'information bas de page -->
+    <div style="padding: 0.6rem 1rem; background: rgba(15,23,42,0.85); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);" id="meds-count-container">
+            <i class="fa-solid fa-pills" style="color: var(--color-primary); margin-right: 0.4rem;"></i>
+            <span id="meds-count-text">Chargement des médicaments...</span>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+            <i class="fa-solid fa-check-double" style="margin-right: 0.3rem; color: #10b981;"></i>
+            100% des données visibles sur votre écran
+        </div>
     </div>
 </div>
 
@@ -328,10 +317,16 @@
             .then(res => res.json())
             .then(data => {
                 const tbody = document.getElementById('medicaments-tbody');
+                const countText = document.getElementById('meds-count-text');
                 tbody.innerHTML = '';
 
-                if (data.medicaments.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun médicament correspondant</td></tr>`;
+                const totalMeds = data.medicaments ? data.medicaments.length : 0;
+                if (countText) {
+                    countText.textContent = `${totalMeds} médicament(s) dans le catalogue`;
+                }
+
+                if (!data.medicaments || data.medicaments.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">Aucun médicament correspondant aux critères.</td></tr>`;
                     return;
                 }
 
@@ -339,11 +334,32 @@
                     const tr = document.createElement('tr');
                     tr.id = `med-row-${med.id}`;
                     
-                    let badgeClass = 'badge-dispo';
-                    if (med.statut === 'Stock faible') badgeClass = 'badge-faible';
-                    if (med.statut === 'Rupture' || med.statut === 'Expiré') badgeClass = 'badge-expire';
+                    let badgeHtml = '<span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem;">🟢 Disponible</span>';
+                    if (med.statut === 'Expiré') {
+                        badgeHtml = '<span class="badge" style="background: rgba(107,114,128,0.2); color: #9ca3af; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem;">💀 Expiré</span>';
+                    } else if (med.statut === 'Rupture') {
+                        badgeHtml = '<span class="badge" style="background: rgba(239,68,68,0.15); color: #ef4444; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem;">🔴 Rupture</span>';
+                    } else if (med.statut === 'Stock faible') {
+                        badgeHtml = '<span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem;">⚠️ Faible</span>';
+                    }
 
-                    tr.innerHTML = `<td style="font-family: monospace; font-weight: bold; font-size: 0.82rem; color: var(--text-secondary);">${med.code}</td><td class="editable" data-field="nom" data-id="${med.id}" style="font-weight: 500;">${med.nom}</td><td class="editable" data-field="categorie" data-id="${med.id}">${med.categorie}</td><td class="editable" data-field="stock" data-id="${med.id}" style="font-weight: bold; text-align: center;">${med.stock}</td><td class="editable" data-field="prix_achat" data-id="${med.id}" style="text-align: right;">${med.prix_achat} FCFA</td><td class="editable" data-field="prix_vente" data-id="${med.id}" style="color: var(--color-primary); font-weight: bold; text-align: right;">${med.prix_vente} FCFA</td><td class="editable" data-field="date_expiration" data-id="${med.id}">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td><td style="max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${med.fournisseur_nom || ''}">${med.fournisseur_nom || ''}</td><td><span class="badge-status ${badgeClass}">${med.statut}</span></td><td style="text-align: right;"><div style="display: flex; gap: 0.4rem; justify-content: flex-end;"><button class="btn-action-icon edit" onclick="editMedicament(${JSON.stringify(med).replace(/"/g, '&quot;')})" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn-action-icon delete" onclick="deleteMedicament(${med.id}, '${med.nom.replace(/'/g, "\\'")}')" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
+                    tr.innerHTML = `
+                        <td style="font-family: monospace; font-weight: bold; font-size: 0.78rem; color: var(--text-secondary);"><code>${med.code}</code></td>
+                        <td class="editable" data-field="nom" data-id="${med.id}"><strong style="color: #ffffff; font-size: 0.88rem;">${med.nom}</strong></td>
+                        <td class="editable" data-field="categorie" data-id="${med.id}"><span style="color: var(--text-secondary); font-size: 0.8rem;">${med.categorie}</span></td>
+                        <td class="editable" data-field="stock" data-id="${med.id}" style="font-weight: 800; font-size: 0.95rem; text-align: center; color: #ffffff;">${med.stock}</td>
+                        <td class="editable" data-field="prix_achat" data-id="${med.id}" style="text-align: right; color: var(--text-secondary); font-size: 0.82rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_achat)} F</td>
+                        <td class="editable" data-field="prix_vente" data-id="${med.id}" style="color: var(--color-primary); font-weight: bold; text-align: right; font-size: 0.88rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_vente)} F</td>
+                        <td class="editable" data-field="date_expiration" data-id="${med.id}" style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td>
+                        <td style="font-size: 0.8rem; color: var(--text-secondary); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${med.fournisseur_nom || ''}">${med.fournisseur_nom || 'Aucun'}</td>
+                        <td style="text-align: center;">${badgeHtml}</td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 0.25rem; justify-content: center;">
+                                <button class="btn-action-icon edit" onclick="editMedicament(${JSON.stringify(med).replace(/"/g, '&quot;')})" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button class="btn-action-icon delete" onclick="deleteMedicament(${med.id}, '${med.nom.replace(/'/g, "\\'")}')" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </td>
+                    `;
                     tbody.appendChild(tr);
                 });
 
@@ -632,11 +648,11 @@
 {% endblock %}
 
 {% block extra_html %}
-<!-- ===== MODAL IMPORT CSV ===== -->
+<!-- ===== MODAL IMPORT EXCEL / CSV ===== -->
 <div class="modal" id="import-csv-modal">
-    <div class="modal-content" style="max-width: 580px;">
+    <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
-            <h3><i class="fa-solid fa-file-arrow-up" style="color: #10b981;"></i> Importer des m&eacute;dicaments en masse</h3>
+            <h3><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Importer des médicaments (Excel .xlsx / CSV)</h3>
             <button class="modal-close" onclick="closeImportCSVModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -644,20 +660,25 @@
             <!-- Étape 1 : Télécharger le modèle -->
             <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;">
                 <div style="font-weight: 600; color: #10b981; margin-bottom: 0.4rem;">
-                    <i class="fa-solid fa-circle-1"></i> &Eacute;tape 1 — T&eacute;l&eacute;charger le mod&egrave;le
+                    <i class="fa-solid fa-circle-1"></i> Étape 1 — Télécharger le modèle pré-rempli
                 </div>
                 <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-                    Ouvrez ce fichier dans <strong>Excel</strong> ou <strong>LibreOffice Calc</strong>, remplissez vos m&eacute;dicaments et sauvegardez en <em>.csv</em>.
+                    Remplissez la liste de vos médicaments directement dans <strong>Excel</strong> puis importez votre fichier ci-dessous.
                 </p>
-                <a href="/api/import/template/" class="btn btn-secondary" style="font-size: 0.85rem; text-decoration: none;">
-                    <i class="fa-solid fa-download"></i> T&eacute;l&eacute;charger le mod&egrave;le CSV
-                </a>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="/api/import/template/?format=excel" class="btn btn-secondary" style="font-size: 0.85rem; text-decoration: none; border-color: rgba(16,185,129,0.4); color: #10b981;">
+                        <i class="fa-solid fa-file-excel"></i> Télécharger Modèle Excel (.xlsx)
+                    </a>
+                    <a href="/api/import/template/?format=csv" class="btn btn-secondary" style="font-size: 0.85rem; text-decoration: none;">
+                        <i class="fa-solid fa-file-csv"></i> Modèle CSV
+                    </a>
+                </div>
             </div>
 
             <!-- Étape 2 : Colonnes attendues -->
             <div style="background: rgba(99,102,241,0.07); border-radius: 8px; padding: 0.85rem; margin-bottom: 1.25rem; font-size: 0.82rem;">
                 <div style="font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem;">
-                    <i class="fa-solid fa-circle-2"></i> Colonnes du fichier CSV
+                    <i class="fa-solid fa-circle-2"></i> Colonnes requises dans le fichier
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                     <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">code *</span>
@@ -667,15 +688,15 @@
                     <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">stock_minimum</span>
                     <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">prix_achat *</span>
                     <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">prix_vente *</span>
-                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">date_expiration *</span>
+                    <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">date_expiration</span>
                     <span style="background: rgba(99,102,241,0.15); padding: 2px 8px; border-radius: 4px; color: var(--color-primary); font-family: monospace;">fournisseur_nom</span>
                 </div>
-                <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.78rem;">* = obligatoire &nbsp;|&nbsp; Date format : AAAA-MM-JJ (ex: 2027-12-31) &nbsp;|&nbsp; S&eacute;parateur : ; ou ,</div>
+                <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.78rem;">* = obligatoire &nbsp;|&nbsp; Date format : AAAA-MM-JJ ou JJ/MM/AAAA</div>
             </div>
 
             <!-- Étape 3 : Sélectionner le fichier -->
             <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.6rem; font-size: 0.85rem;">
-                <i class="fa-solid fa-circle-3"></i> &Eacute;tape 3 — S&eacute;lectionner votre fichier
+                <i class="fa-solid fa-circle-3"></i> Étape 3 — Sélectionner votre fichier Excel (.xlsx) ou CSV
             </div>
             <div id="csv-drop-zone"
                  onclick="document.getElementById('csv-file-input').click()"
@@ -683,11 +704,12 @@
                  ondragleave="this.style.borderColor='rgba(16,185,129,0.3)';"
                  ondrop="handleCSVDrop(event)"
                  style="border: 2px dashed rgba(16,185,129,0.3); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem;">
-                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; display: block;"></i>
-                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cliquez ou glissez votre fichier CSV ici</div>
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: #10b981; margin-bottom: 0.5rem; display: block;"></i>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cliquez ou glissez votre fichier Excel (.xlsx, .xls) ou CSV ici</div>
                 <div id="csv-file-name" style="margin-top: 0.5rem; font-weight: 600; color: #10b981; font-size: 0.85rem;"></div>
-                <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="onCSVFileSelected(this)">
+                <input type="file" id="csv-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="onCSVFileSelected(this)">
             </div>
+
 
             <!-- Résultat de l'import -->
             <div id="import-result" style="display: none;"></div>

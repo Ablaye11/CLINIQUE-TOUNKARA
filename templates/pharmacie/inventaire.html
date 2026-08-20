@@ -1,0 +1,524 @@
+{% extends 'pharmacie/base.html' %}
+
+{% block title %}Inventaire & Bilan Automatique — Clinique Tounkara{% endblock %}
+
+{% block content %}
+<!-- En-tête de la Page -->
+<div class="table-header print-hide" style="margin-bottom: 1.5rem; align-items: center;">
+    <div>
+        <h2 style="display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 700;">
+            <span style="background: rgba(99,102,241,0.2); color: var(--color-primary); width: 42px; height: 42px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-clipboard-check"></i>
+            </span>
+            Inventaire & Bilan Automatique
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">
+            Suivi automatisé du stock restant, entrées, ventes et bilans financiers (journalier & mensuel)
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button onclick="window.print()" class="btn btn-secondary" style="padding: 0.65rem 1.25rem;">
+            <i class="fa-solid fa-print"></i> Imprimer la Fiche
+        </button>
+        <a href="{% url 'api_inventaire_export_csv' %}" class="btn btn-primary" style="padding: 0.65rem 1.25rem; background: #10b981; border-color: #10b981;" download>
+            <i class="fa-solid fa-file-excel"></i> Exporter CSV / Excel
+        </a>
+    </div>
+</div>
+
+<!-- Zone d'en-tête pour l'impression papier -->
+<div class="print-only print-header" style="display: none; margin-bottom: 25px; border-bottom: 2px solid #0d9488; padding-bottom: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 22pt; margin: 0; color: #0d9488; font-weight: 800;">CLINIQUE TOUNKARA</h1>
+            <p style="margin: 3px 0 0 0; font-size: 11pt; color: #333; font-weight: 600;">Service Pharmacie & Gestion des Stocks (Ouvert 24h/24 - 7j/7)</p>
+            <p style="margin: 2px 0 0 0; font-size: 9.5pt; color: #555;">Keur Massar, Dakar · Sénégal | Tél: +221 77 478 43 43 / +221 33 878 20 41 | www.clinictounkara.com</p>
+        </div>
+        <div style="text-align: right;">
+            <h2 style="font-size: 14pt; margin: 0; text-transform: uppercase; font-weight: 800; color: #000;">BILAN D'INVENTAIRE OFFICIEL</h2>
+            <p style="margin: 4px 0 0 0; font-size: 10pt; color: #444;" id="print-period-label">Généré le : {% now "d/m/Y à H:i" %}</p>
+            <p style="margin: 2px 0 0 0; font-size: 9pt; color: #666;">Responsable: Germaine Dieng</p>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 1 : SELECTION DE LA PERIODE -->
+<div class="chart-card print-hide" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border: 1px solid var(--border-color); background: #ffffff;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.5rem;">
+                <i class="fa-solid fa-filter" style="color: var(--color-primary);"></i> Période d'analyse :
+            </span>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <button class="btn-filter active" id="filter-jour" onclick="changePeriode('jour')">
+                    <i class="fa-solid fa-calendar-day"></i> Aujourd'hui
+                </button>
+                <button class="btn-filter" id="filter-hier" onclick="changePeriode('hier')">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Hier
+                </button>
+                <button class="btn-filter" id="filter-mois" onclick="changePeriode('mois')">
+                    <i class="fa-solid fa-calendar-days"></i> Ce mois-ci
+                </button>
+                <button class="btn-filter" id="filter-an" onclick="changePeriode('an')">
+                    <i class="fa-solid fa-calendar"></i> Année
+                </button>
+                <button class="btn-filter" id="filter-tout" onclick="changePeriode('tout')">
+                    <i class="fa-solid fa-layer-group"></i> Tout
+                </button>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.85rem; color: #047857; font-weight: 600;"><i class="fa-solid fa-calendar-check"></i> Autre date :</span>
+            <input type="date" id="custom-date-picker" class="input-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.85rem;" onchange="changeCustomDate(this.value)">
+        </div>
+    </div>
+</div>
+
+<!-- BANNIERE D'INFORMATION PERIODE ACTIVE -->
+<div class="print-hide" style="background: #e6f7ed; border-left: 4px solid var(--color-primary); padding: 0.75rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <div style="font-weight: 700; font-size: 0.95rem; color: #064e3b;">
+        <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 0.4rem;"></i>
+        Inventaire en cours : <span id="active-period-text" style="color: var(--color-primary); font-weight: 800;">Aujourd'hui</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.78rem; color: #047857; font-weight: 600;">
+            <i class="fa-solid fa-clock"></i> Mis à jour : <span id="last-update-time">--:--:--</span>
+        </span>
+        <span class="badge" style="background: #d1fae5; color: #047857; font-weight: 700; padding: 0.35rem 0.75rem; cursor: pointer;" onclick="loadInventoryData()" title="Actualiser maintenant">
+            <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i> Sync. Auto ✓
+        </span>
+    </div>
+</div>
+
+<!-- SECTION 2 : CARTES FINANCIERES KPI (LISPIDE & ULTRA LISIBLE) -->
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+    <!-- KPI 1 : Valeur du Stock Restant en Vente -->
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #a7f3d0; border-left: 5px solid var(--color-primary); padding: 1.25rem; border-radius: 14px; box-shadow: var(--shadow-premium);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #047857;">VALEUR STOCK EN VENTE</span>
+                <div class="stat-value" id="kpi-valeur-stock-vente" style="font-size: 1.6rem; font-weight: 900; color: #064e3b; margin: 0.4rem 0;">0 FCFA</div>
+                <div style="font-size: 0.8rem; color: #10b981; font-weight: 600;" id="kpi-valeur-stock-achat">Capital Achat: 0 FCFA</div>
+            </div>
+            <div style="width: 44px; height: 44px; background: #e6f7ed; color: var(--color-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="fa-solid fa-vault"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI 2 : Somme Vendue / CA -->
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #a7f3d0; border-left: 5px solid #10b981; padding: 1.25rem; border-radius: 14px; box-shadow: var(--shadow-premium);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #047857;">SOMME VENDUE (CA)</span>
+                <div class="stat-value" id="kpi-somme-vendue" style="font-size: 1.6rem; font-weight: 900; color: #10b981; margin: 0.4rem 0;">0 FCFA</div>
+                <div style="font-size: 0.8rem; color: #059669; font-weight: 600;" id="kpi-benefice-ventes">Marge nette: 0 FCFA</div>
+            </div>
+            <div style="width: 44px; height: 44px; background: #d1fae5; color: #10b981; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="fa-solid fa-cash-register"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI 3 : Entrées de Stock (coût achat réel) -->
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 1.25rem; border-radius: 14px; box-shadow: var(--shadow-premium);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #b45309;">ENTRÉES DE STOCK</span>
+                <div class="stat-value" id="kpi-valeur-entrees" style="font-size: 1.6rem; font-weight: 900; color: #d97706; margin: 0.4rem 0;">0 FCFA</div>
+                <div style="font-size: 0.8rem; color: #b45309; font-weight: 600;" id="kpi-qte-entrees">0 unités approvisionnées</div>
+                <div style="font-size: 0.78rem; color: #d97706; margin-top: 2px;" id="kpi-valeur-entrees-vente">Valeur vente: 0 FCFA</div>
+            </div>
+            <div style="width: 44px; height: 44px; background: #fef3c7; color: #d97706; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="fa-solid fa-boxes-packing"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI 4 : Nombre total de références & Marge globale -->
+    <div class="stat-card" style="background: #ffffff; border: 1px solid #a7f3d0; border-left: 5px solid #059669; padding: 1.25rem; border-radius: 14px; box-shadow: var(--shadow-premium);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <span style="font-size: 0.78rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #047857;">PRODUITS EN STOCK</span>
+                <div class="stat-value" id="kpi-total-produits" style="font-size: 1.6rem; font-weight: 900; color: #059669; margin: 0.4rem 0;">0</div>
+                <div style="font-size: 0.8rem; color: #10b981; font-weight: 600;" id="kpi-marge-potentielle">Marge globale: 0 FCFA</div>
+            </div>
+            <div style="width: 44px; height: 44px; background: #e6f7ed; color: #059669; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                <i class="fa-solid fa-capsules"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 3 : TABLEAU D'INVENTAIRE RECAPITULATIF ULTRA LISIBLE -->
+<div class="chart-card" style="padding: 1.25rem;">
+    <!-- En-tête et barre de recherche du tableau -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;" class="print-hide">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: #064e3b; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+            <i class="fa-solid fa-list-check" style="color: var(--color-primary);"></i>
+            Fiche d'Inventaire des Produits
+        </h3>
+
+        <div style="display: flex; gap: 0.75rem; flex-grow: 1; max-width: 520px;">
+            <div style="position: relative; flex-grow: 1;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="inventory-search" class="input-control" placeholder="Rechercher médicament, code-barres..." oninput="filterInventoryTable()" style="padding-left: 2.2rem;">
+            </div>
+            <select id="inventory-statut-filter" class="input-control" onchange="filterInventoryTable()" style="width: 170px;">
+                <option value="">Tous les statuts</option>
+                <option value="Disponible">🟢 Disponible</option>
+                <option value="Stock faible">⚠️ Stock faible</option>
+                <option value="Rupture">🔴 Rupture</option>
+                <option value="Expiré">💀 Expiré</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Conteneur scrollable du tableau -->
+    <div class="table-responsive">
+        <table class="table-custom" id="inventory-table" style="width: 100%; min-width: 1100px; table-layout: auto;">
+            <thead>
+                <tr>
+                    <th style="min-width: 140px; padding: 0.75rem 1rem;">Code-barres</th>
+                    <th style="min-width: 220px; padding: 0.75rem 1rem;">Nom du médicament</th>
+                    <th style="min-width: 140px; padding: 0.75rem 1rem;">Catégorie</th>
+                    <th style="text-align: right; min-width: 110px; padding: 0.75rem 1rem;">Prix Achat</th>
+                    <th style="text-align: right; min-width: 110px; padding: 0.75rem 1rem;">Prix Vente</th>
+                    <th style="text-align: center; min-width: 110px; padding: 0.75rem 1rem;">Stock Restant</th>
+                    <th style="text-align: center; min-width: 100px; padding: 0.75rem 1rem;" class="print-hide">Entrées (+)</th>
+                    <th style="text-align: center; min-width: 100px; padding: 0.75rem 1rem;" class="print-hide">Ventes (-)</th>
+                    <th style="text-align: right; min-width: 160px; padding: 0.75rem 1rem;">Valeur Stock Restant</th>
+                    <th style="text-align: center; min-width: 130px; padding: 0.75rem 1rem;">Statut</th>
+                </tr>
+            </thead>
+
+            <tbody id="inventory-tbody">
+                <tr>
+                    <td colspan="10" style="text-align: center; padding: 2.5rem; color: #047857; font-weight: 600;">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--color-primary);"></i><br><br>
+                        Chargement de l'inventaire...
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: 800; background: #e6f7ed; border-top: 2px solid var(--color-primary); font-size: 0.95rem;">
+                    <td colspan="3" style="color: #064e3b;">TOTAL GENERAL INVENTAIRE</td>
+                    <td style="text-align: right; color: #064e3b;" id="foot-total-achat">-</td>
+                    <td style="text-align: right; color: #064e3b;" id="foot-total-vente">-</td>
+                    <td style="text-align: center; font-size: 1.1rem; color: #064e3b;" id="foot-total-stock">0</td>
+                    <td style="text-align: center; color: #10b981;" class="print-hide" id="foot-total-entrees">+0</td>
+                    <td style="text-align: center; color: #dc2626;" class="print-hide" id="foot-total-sorties">-0</td>
+                    <td style="text-align: right; color: #10b981; font-size: 1.15rem;" id="foot-valeur-totale">0 FCFA</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Bloc Signature pour l'impression officielle -->
+<div class="print-only" style="display: none; margin-top: 50px; page-break-inside: avoid;">
+    <div style="display: flex; justify-content: space-between;">
+        <div style="width: 45%; text-align: center; border-top: 1px dashed #000; padding-top: 8px;">
+            <p style="font-weight: bold; margin: 0; font-size: 11pt;">Le Pharmacien / Responsable Stock</p>
+            <p style="font-size: 9pt; color: #555; margin-top: 45px;">Signature & Cachet</p>
+        </div>
+        <div style="width: 45%; text-align: center; border-top: 1px dashed #000; padding-top: 8px;">
+            <p style="font-weight: bold; margin: 0; font-size: 11pt;">La Direction — Clinique Tounkara</p>
+            <p style="font-size: 9pt; color: #555; margin-top: 45px;">Signature & Cachet</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn-filter {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+        padding: 0.5rem 0.95rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-filter:hover {
+        background: #e6f7ed;
+        color: #064e3b;
+        border-color: #10b981;
+    }
+    .btn-filter.active {
+        background: #10b981;
+        color: white;
+        border-color: #10b981;
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .inventory-row:hover {
+        background-color: #f0fdf4 !important;
+    }
+
+    /* Impression propre */
+    @media print {
+        body {
+            background: white !important;
+            color: black !important;
+            font-size: 10pt;
+        }
+        .sidebar, .top-header, .print-hide, .mobile-hamburger-btn {
+            display: none !important;
+        }
+        .main-workspace {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .main-content {
+            padding: 0 !important;
+        }
+        .print-only {
+            display: block !important;
+        }
+        .chart-card, .stat-card {
+            background: none !important;
+            border: 1px solid #ddd !important;
+            box-shadow: none !important;
+            color: black !important;
+        }
+        .stat-details .stat-value {
+            color: black !important;
+        }
+        table.table-custom {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+        table.table-custom th, table.table-custom td {
+            border: 1px solid #ccc !important;
+            padding: 6px 8px !important;
+            color: black !important;
+        }
+        table.table-custom th {
+            background-color: #f2f2f2 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPeriode = 'jour';
+    let currentCustomDate = '';
+    let rawInventoryItems = [];
+    let autoRefreshTimer = null;
+
+    const periodeLabels = {
+        'jour': "Aujourd'hui",
+        'hier': "Hier",
+        'mois': "Ce mois-ci",
+        'an': "Année en cours",
+        'tout': "Historique complet"
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadInventoryData();
+        // Auto-synchronisation toutes les 30 secondes
+        autoRefreshTimer = setInterval(() => {
+            loadInventoryData(true); // true = silencieux (pas de spinner)
+        }, 30000);
+    });
+
+    function changePeriode(periode) {
+        currentPeriode = periode;
+        currentCustomDate = '';
+        document.getElementById('custom-date-picker').value = '';
+        
+        document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`filter-${periode}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        document.getElementById('active-period-text').textContent = periodeLabels[periode] || periode;
+
+        loadInventoryData();
+    }
+
+    function changeCustomDate(dateVal) {
+        if (!dateVal) return;
+        currentCustomDate = dateVal;
+        document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+        
+        const formattedDate = new Date(dateVal).toLocaleDateString('fr-FR');
+        document.getElementById('active-period-text').textContent = `Date du ${formattedDate}`;
+
+        loadInventoryData();
+    }
+
+    function loadInventoryData(silent = false) {
+        const tbody = document.getElementById('inventory-tbody');
+        const refreshIcon = document.getElementById('refresh-icon');
+
+        // Spinner de chargement seulement si pas silencieux
+        if (!silent) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--color-primary);"></i><br><br>Calcul automatique en cours...</td></tr>`;
+        }
+
+        // Animer l'icône de refresh
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+        let url = `/api/inventaire/?periode=${currentPeriode}`;
+        if (currentCustomDate) {
+            url += `&date=${currentCustomDate}`;
+        }
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                rawInventoryItems = data.items || [];
+                updateKPICards(data.stats, data.date_debut, data.date_fin);
+                renderInventoryTable(rawInventoryItems);
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            })
+            .catch(err => {
+                if (!silent) {
+                    showToast('Erreur lors du chargement de l\'inventaire', 'danger');
+                    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--color-danger); padding: 1.5rem;">Erreur de chargement. Veuillez réessayer.</td></tr>`;
+                }
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            });
+    }
+
+    function updateKPICards(stats, startStr, endStr) {
+        // --- KPI 1 : Valeur du stock restant (prix de vente & coût achat) ---
+        document.getElementById('kpi-valeur-stock-vente').textContent = formatFCFA(stats.valeur_stock_vente);
+        document.getElementById('kpi-valeur-stock-achat').textContent = `Capital Achat: ${formatFCFA(stats.valeur_stock_achat)}`;
+
+        // --- KPI 2 : Chiffre d'affaires & marge bénéficiaire réelle ---
+        document.getElementById('kpi-somme-vendue').textContent = formatFCFA(stats.somme_vendue);
+        const margeLabel = stats.nb_ventes > 0
+            ? `Bénéfice: ${formatFCFA(stats.benefice_ventes)} · ${stats.nb_ventes} vente(s)`
+            : `Aucune vente sur cette période`;
+        document.getElementById('kpi-benefice-ventes').textContent = margeLabel;
+
+        // --- KPI 3 : Entrées de stock au COÛT D'ACHAT réel (ce que la clinique a dépensé) ---
+        document.getElementById('kpi-valeur-entrees').textContent = formatFCFA(stats.valeur_entrees_achat);
+        document.getElementById('kpi-qte-entrees').textContent = `${stats.total_entrees_qte} unité(s) approvisionnée(s)`;
+        if (document.getElementById('kpi-valeur-entrees-vente')) {
+            document.getElementById('kpi-valeur-entrees-vente').textContent = `Valeur vente: ${formatFCFA(stats.valeur_entrees_vente)}`;
+        }
+
+        // --- KPI 4 : Nombre de références & marge potentielle globale ---
+        document.getElementById('kpi-total-produits').textContent = stats.total_produits;
+        document.getElementById('kpi-marge-potentielle').textContent = `Marge potentielle: ${formatFCFA(stats.marge_stock_restant)}`;
+
+        // --- Libellé d'impression ---
+        const printLabel = document.getElementById('print-period-label');
+        if (printLabel) {
+            printLabel.textContent = `Période : du ${startStr} au ${endStr} — Imprimé le {% now "d/m/Y à H:i" %}`;
+        }
+
+        // --- Horodatage de la dernière synchronisation ---
+        const now = new Date();
+        document.getElementById('last-update-time').textContent = now.toLocaleTimeString('fr-FR');
+    }
+
+    function renderInventoryTable(items) {
+        const tbody = document.getElementById('inventory-tbody');
+        tbody.innerHTML = '';
+
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--text-secondary); font-size: 0.95rem;">Aucun produit ne correspond aux critères.</td></tr>`;
+            return;
+        }
+
+        let totalStock = 0;
+        let totalEntrees = 0;
+        let totalSorties = 0;
+        let totalValeurVente = 0;
+        let totalValeurAchat = 0;
+
+        items.forEach(item => {
+            totalStock += item.stock_actuel;
+            totalEntrees += item.entrees_periode;
+            totalSorties += item.sorties_periode;
+            totalValeurVente += item.valeur_restante_vente;
+            totalValeurAchat += item.valeur_restante_achat;
+
+            let badgeHtml = '<span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600;">🟢 Disponible</span>';
+            if (item.statut === 'Expiré') {
+                badgeHtml = '<span class="badge" style="background: rgba(107,114,128,0.2); color: #9ca3af; font-weight: 600;">💀 Expiré</span>';
+            } else if (item.statut === 'Rupture') {
+                badgeHtml = '<span class="badge" style="background: rgba(239,68,68,0.15); color: #ef4444; font-weight: 600;">🔴 Rupture</span>';
+            } else if (item.statut === 'Stock faible') {
+                badgeHtml = '<span class="badge" style="background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: 600;">⚠️ Faible</span>';
+            }
+
+            // Marge unitaire pour ce produit (affichée en tooltip)
+            const margeUnitaire = item.prix_vente - item.prix_achat;
+            const margeColor = margeUnitaire > 0 ? '#10b981' : '#ef4444';
+
+            const tr = document.createElement('tr');
+            tr.className = 'inventory-row';
+            tr.innerHTML = `
+                <td><code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);">${item.code}</code></td>
+                <td><strong style="color: #ffffff; font-size: 0.92rem;">${item.nom}</strong></td>
+                <td><span style="color: var(--text-secondary); font-size: 0.85rem;">${item.categorie}</span></td>
+                <td style="text-align: right; color: var(--text-secondary);">${formatNumber(item.prix_achat)} F</td>
+                <td style="text-align: right; font-weight: 600; color: var(--text-primary);">
+                    ${formatNumber(item.prix_vente)} F
+                    <div style="font-size: 0.7rem; color: ${margeColor}; font-weight: 500;">+${formatNumber(margeUnitaire)} F/u</div>
+                </td>
+                <td style="text-align: center; font-weight: 800; font-size: 1.05rem; color: #ffffff;">${item.stock_actuel}</td>
+                <td style="text-align: center; font-weight: 700; color: #10b981;" class="print-hide">${item.entrees_periode > 0 ? '+' + item.entrees_periode : '0'}</td>
+                <td style="text-align: center; font-weight: 700; color: #ef4444;" class="print-hide">${item.sorties_periode > 0 ? '-' + item.sorties_periode : '0'}</td>
+                <td style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 0.95rem;">
+                    ${formatFCFA(item.valeur_restante_vente)}
+                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 400;">Achat: ${formatNumber(item.valeur_restante_achat)} F</div>
+                </td>
+                <td style="text-align: center;">${badgeHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Pied de tableau : totaux exacts synchronisés
+        document.getElementById('foot-total-stock').textContent = formatNumber(totalStock);
+        document.getElementById('foot-total-entrees').textContent = '+' + totalEntrees;
+        document.getElementById('foot-total-sorties').textContent = '-' + totalSorties;
+        document.getElementById('foot-valeur-totale').textContent = formatFCFA(totalValeurVente);
+
+        // Totaux prix achat/vente dans le footer
+        const footAchat = document.getElementById('foot-total-achat');
+        const footVente = document.getElementById('foot-total-vente');
+        if (footAchat) footAchat.textContent = formatFCFA(totalValeurAchat);
+        if (footVente) footVente.textContent = formatFCFA(totalValeurVente);
+    }
+
+    function filterInventoryTable() {
+        const query = document.getElementById('inventory-search').value.toLowerCase().trim();
+        const statut = document.getElementById('inventory-statut-filter').value.toLowerCase();
+
+        const filtered = rawInventoryItems.filter(item => {
+            const matchQuery = item.nom.toLowerCase().includes(query) || 
+                               item.code.toLowerCase().includes(query) || 
+                               item.categorie.toLowerCase().includes(query);
+            const matchStatut = !statut || item.statut.toLowerCase() === statut;
+            return matchQuery && matchStatut;
+        });
+
+        renderInventoryTable(filtered);
+    }
+
+    function formatFCFA(amount) {
+        return new Intl.NumberFormat('fr-FR').format(Math.round(amount)) + ' FCFA';
+    }
+
+    function formatNumber(amount) {
+        return new Intl.NumberFormat('fr-FR').format(Math.round(amount));
+    }
+</script>
+{% endblock %}

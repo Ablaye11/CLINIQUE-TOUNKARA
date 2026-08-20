@@ -14,16 +14,18 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', system-ui, sans-serif; }
 
         :root {
-            --bg-main: #0a0e17;
-            --bg-card: rgba(20, 28, 47, 0.85);
-            --bg-input: #151e30;
-            --border-color: rgba(255,255,255,0.08);
-            --color-primary: #6366f1;
+            --bg-main: #05130d;
+            --bg-card: rgba(11, 34, 23, 0.92);
+            --bg-input: #112d20;
+            --border-color: rgba(16, 185, 129, 0.25);
+            --color-primary: #10b981;
+            --color-primary-hover: #059669;
+            --color-teal-bright: #34d399;
             --color-success: #10b981;
             --color-danger: #ef4444;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #6ee7b7;
         }
 
         html, body {
@@ -44,12 +46,12 @@
             position: absolute;
             border-radius: 50%;
             filter: blur(100px);
-            opacity: 0.12;
+            opacity: 0.22;
             animation: float 12s ease-in-out infinite;
         }
-        .orb-1 { width: 500px; height: 500px; background: #6366f1; top: -15%; left: -10%; animation-delay: 0s; }
-        .orb-2 { width: 350px; height: 350px; background: #8b5cf6; bottom: -10%; right: 5%; animation-delay: -4s; }
-        .orb-3 { width: 250px; height: 250px; background: #06b6d4; top: 40%; left: 55%; animation-delay: -8s; }
+        .orb-1 { width: 500px; height: 500px; background: #10b981; top: -15%; left: -10%; animation-delay: 0s; }
+        .orb-2 { width: 350px; height: 350px; background: #34d399; bottom: -10%; right: 5%; animation-delay: -4s; }
+        .orb-3 { width: 250px; height: 250px; background: #059669; top: 40%; left: 55%; animation-delay: -8s; }
 
         @keyframes float {
             0%, 100% { transform: translateY(0) scale(1); }
@@ -69,13 +71,13 @@
 
         .login-card {
             background: var(--bg-card);
-            border: 1px solid rgba(99,102,241,0.15);
+            border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 2.5rem 2.25rem;
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             backdrop-filter: blur(20px);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 25px rgba(13,148,136,0.15);
             animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
         }
 
@@ -87,46 +89,23 @@
         /* Logo / header */
         .login-logo {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.85rem;
-            margin-bottom: 2rem;
-        }
-        .logo-icon-wrap {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.45rem;
-            color: white;
-            box-shadow: 0 0 20px rgba(99,102,241,0.4);
-            flex-shrink: 0;
-        }
-        .logo-title h1 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff 30%, #6366f1 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
-        }
-        .logo-title span {
-            font-size: 0.72rem;
-            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 1.75rem;
         }
 
         .login-title {
-            font-size: 1.55rem;
+            font-size: 1.45rem;
             font-weight: 700;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
+            text-align: center;
         }
         .login-subtitle {
             font-size: 0.85rem;
             color: var(--text-secondary);
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
 
         /* Form elements */
@@ -136,7 +115,7 @@
         .form-group label {
             display: block;
             font-size: 0.8rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 0.45rem;
         }
@@ -167,7 +146,7 @@
         }
         .input-wrap input:focus {
             border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+            box-shadow: 0 0 0 3px rgba(13,148,136,0.2);
         }
         .input-wrap input:focus + i,
         .input-wrap:focus-within i {
@@ -192,8 +171,8 @@
 
         /* Error message */
         .error-msg {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.25);
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.3);
             border-radius: 8px;
             padding: 0.65rem 0.9rem;
             font-size: 0.82rem;
@@ -214,7 +193,7 @@
         .btn-login {
             width: 100%;
             padding: 0.88rem 1rem;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #0d9488, #06b6d4);
             color: white;
             border: none;
             border-radius: 12px;
@@ -227,13 +206,13 @@
             justify-content: center;
             gap: 0.65rem;
             transition: all 0.22s ease;
-            box-shadow: 0 4px 18px rgba(99,102,241,0.4);
+            box-shadow: 0 4px 18px rgba(13,148,136,0.4);
             margin-top: 0.4rem;
             letter-spacing: 0.03em;
         }
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(99,102,241,0.6);
+            box-shadow: 0 8px 28px rgba(13,148,136,0.6);
         }
         .btn-login:active { transform: translateY(0); }
         .btn-login:disabled {
@@ -244,14 +223,16 @@
 
         /* Footer */
         .login-footer {
-            margin-top: 1.75rem;
+            margin-top: 1.5rem;
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.76rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border-color);
             padding-top: 1rem;
+            line-height: 1.5;
         }
-        .login-footer strong { color: var(--text-secondary); }
+        .login-footer a { color: var(--color-teal-bright); text-decoration: none; font-weight: 600; }
+        .login-footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -265,19 +246,13 @@
     <div class="login-container">
         <div class="login-card">
 
-            <!-- Logo -->
+            <!-- Logo Officiel Clinique Tounkara -->
             <div class="login-logo">
-                <div class="logo-icon-wrap">
-                    <i class="fa-solid fa-prescription-bottle-medical"></i>
-                </div>
-                <div class="logo-title">
-                    <h1>PharmaTounkara</h1>
-                    <span>Clinique Tounkara — Dakar, Sénégal</span>
-                </div>
+                <img src="{% static 'images/logo_clinique_tounkara.svg' %}" alt="Clinique Tounkara Logo" style="width: 280px; height: auto; filter: drop-shadow(0 0 12px rgba(13,148,136,0.4));">
             </div>
 
-            <div class="login-title">Connexion</div>
-            <div class="login-subtitle">Veuillez vous connecter pour accéder au logiciel.</div>
+            <div class="login-title">Espace Pharmacie</div>
+            <div class="login-subtitle">Connectez-vous pour accéder au logiciel de gestion</div>
 
             <!-- Error message -->
             {% if error %}
@@ -294,7 +269,7 @@
                 <div class="form-group">
                     <label for="username">Identifiant</label>
                     <div class="input-wrap">
-                        <input type="text" id="username" name="username" placeholder="Votre identifiant" required autocomplete="username" value="{{ username|default:'' }}">
+                        <input type="text" id="username" name="username" placeholder="Identifiant (ex: admin, caissier...)" required autocomplete="username" value="{{ username|default:'' }}">
                         <i class="fa-solid fa-user"></i>
                     </div>
                 </div>
@@ -302,7 +277,7 @@
                 <div class="form-group">
                     <label for="password">Mot de passe</label>
                     <div class="input-wrap">
-                        <input type="password" id="password" name="password" placeholder="Votre mot de passe" required autocomplete="current-password">
+                        <input type="password" id="password" name="password" placeholder="Mot de passe" required autocomplete="current-password">
                         <i class="fa-solid fa-lock"></i>
                         <button type="button" class="toggle-eye" onclick="togglePwd()" title="Afficher/masquer">
                             <i class="fa-solid fa-eye" id="eye-icon"></i>
@@ -312,13 +287,14 @@
 
                 <button type="submit" class="btn-login" id="login-btn">
                     <i class="fa-solid fa-right-to-bracket"></i>
-                    Se connecter
+                    Connexion Pharmacie
                 </button>
             </form>
 
             <div class="login-footer">
-                <strong>PharmaTounkara v2.0</strong> — Logiciel de gestion pharmaceutique<br>
-                Pour créer un compte, contactez l'<strong>Administrateur</strong>.
+                <strong>CLINIQUE TOUNKARA</strong> — Service Pharmacie & Gestion<br>
+                <i class="fa-solid fa-location-dot" style="color: var(--color-primary);"></i> Keur Massar, Dakar · <i class="fa-solid fa-phone" style="color: var(--color-primary);"></i> +221 77 478 43 43<br>
+                <a href="https://www.clinictounkara.com/" target="_blank">www.clinictounkara.com</a>
             </div>
         </div>
     </div>

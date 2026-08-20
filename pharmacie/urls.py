@@ -14,6 +14,7 @@ urlpatterns = [
     path('ventes/', views.gestion_ventes, name='gestion_ventes'),
     path('fournisseurs/', views.gestion_fournisseurs, name='gestion_fournisseurs'),
     path('rapports/', views.rapports_page, name='rapports_page'),
+    path('inventaire/', views.inventaire_page, name='inventaire_page'),
     path('utilisateurs/', views.utilisateurs_page, name='utilisateurs_page'),
     
     # API endpoints
@@ -32,15 +33,18 @@ urlpatterns = [
     
     path('api/ventes/creer/', views.api_vente_creer, name='api_vente_creer'),
     path('api/ventes/historique/', views.api_ventes_historique, name='api_ventes_historique'),
-    path('api/ventes/<int:vente_id>/annuler/', views.api_vente_annuler, name='api_vente_annuler'),  # ✅ NOUVEAU
+    path('api/ventes/<int:vente_id>/annuler/', views.api_vente_annuler, name='api_vente_annuler'),
     path('facture/<int:vente_id>/print/', views.api_facture_pdf, name='api_facture_print'),
     
     path('api/rapports/', views.api_rapports_data, name='api_rapports_data'),
+    path('api/inventaire/', views.api_inventaire_data, name='api_inventaire_data'),
+    path('api/inventaire/export/', views.api_inventaire_export_csv, name='api_inventaire_export_csv'),
     path('api/peupler/', views.api_peupler_db, name='api_peupler_db'),
 
-    # Import CSV en masse
+    # Import Excel (.xlsx) / CSV en masse
     path('api/import/template/', views.api_import_template, name='api_import_template'),
     path('api/import/csv/', views.api_import_csv, name='api_import_csv'),
+
 
     # User management API
     path('api/utilisateurs/', views.api_utilisateurs_liste, name='api_utilisateurs_liste'),
