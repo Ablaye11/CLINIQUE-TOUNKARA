@@ -361,11 +361,17 @@
 
     // Charger les médicaments
     function loadMedicaments() {
-        const q = document.getElementById('filter-search').value;
-        const cat = document.getElementById('filter-categorie').value;
-        const exp = document.getElementById('filter-expiration').value;
-        const statut = document.getElementById('filter-statut').value;
-        const sort = document.getElementById('sort-by').value;
+        const qEl = document.getElementById('filter-search');
+        const catEl = document.getElementById('filter-categorie');
+        const expEl = document.getElementById('filter-expiration');
+        const statutEl = document.getElementById('filter-statut');
+        const sortEl = document.getElementById('sort-by');
+
+        const q = qEl ? qEl.value : '';
+        const cat = catEl ? catEl.value : '';
+        const exp = expEl ? expEl.value : '';
+        const statut = statutEl ? statut.value : '';
+        const sort = sortEl ? sortEl.value : 'nom';
 
         const url = `/api/medicaments/?q=${encodeURIComponent(q)}&categorie=${encodeURIComponent(cat)}&exp=${encodeURIComponent(exp)}&statut=${encodeURIComponent(statut)}&sort=${sort}&reverse=${sortReverse}`;
 
