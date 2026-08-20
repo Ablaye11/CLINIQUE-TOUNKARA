@@ -68,9 +68,9 @@
     <!-- History list -->
     <div class="chart-card">
         <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--color-success);"></i> Historique des Mouvements</h3>
-        <div style="margin-bottom: 1rem; display: flex; gap: 1rem;">
-            <input type="text" id="history-search" class="input-control" placeholder="Filtrer l'historique..." oninput="filterHistoryTable()" style="flex-grow: 1;">
-            <select id="history-type-filter" class="input-control" onchange="filterHistoryTable()">
+        <div style="margin-bottom: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <input type="text" id="history-search" class="input-control" placeholder="Filtrer l'historique..." oninput="filterHistoryTable()" style="flex: 2 1 180px;">
+            <select id="history-type-filter" class="input-control" onchange="filterHistoryTable()" style="flex: 1 1 120px;">
                 <option value="">Tous les types</option>
                 <option value="ENTREE">Entrées</option>
                 <option value="SORTIE">Sorties</option>

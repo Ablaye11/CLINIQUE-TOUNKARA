@@ -800,10 +800,22 @@ html, body {
     gap: 1.25rem;
 }
 
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+}
+
 .form-group label {
     font-size: 0.85rem;
     color: #047857;
     font-weight: 700;
+}
+
+.input-control, select, input, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Mobile Sidebar Backdrop — couvre uniquement la zone de contenu, pas la sidebar */
