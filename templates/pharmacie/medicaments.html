@@ -370,7 +370,7 @@
         const q = qEl ? qEl.value : '';
         const cat = catEl ? catEl.value : '';
         const exp = expEl ? expEl.value : '';
-        const statut = statutEl ? statut.value : '';
+        const statut = statutEl ? statutEl.value : '';
         const sort = sortEl ? sortEl.value : 'nom';
 
         const url = `/api/medicaments/?q=${encodeURIComponent(q)}&categorie=${encodeURIComponent(cat)}&exp=${encodeURIComponent(exp)}&statut=${encodeURIComponent(statut)}&sort=${sort}&reverse=${sortReverse}`;
