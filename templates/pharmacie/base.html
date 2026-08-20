@@ -414,11 +414,8 @@
                 .catch(() => {});
         }
         
-        // Exécuter l'update 1.5 seconde APRÈS le chargement de la page pour une fluidité maximale
-        setTimeout(() => {
-            updateAlertBadge();
-            setInterval(updateAlertBadge, 15000);
-        }, 1500);
+        // Exécuter l'update une fois en arrière-plan 2 secondes après le chargement
+        setTimeout(updateAlertBadge, 2000);
 
         // ============================================================
         // SIDEBAR — Ferme automatiquement au clic sur un lien de menu

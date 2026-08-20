@@ -356,10 +356,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadInventoryData();
-        // Auto-synchronisation toutes les 30 secondes
-        autoRefreshTimer = setInterval(() => {
-            loadInventoryData(true); // true = silencieux (pas de spinner)
-        }, 30000);
     });
 
     function changePeriode(periode) {
