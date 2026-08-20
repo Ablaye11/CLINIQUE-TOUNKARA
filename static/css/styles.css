@@ -910,11 +910,16 @@ html, body {
         max-height: 92vh !important;
         margin: 0 auto;
     }
-    .table-responsive, table {
-        display: block;
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    .table-responsive {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .table-custom, table {
+        display: table !important;
+        width: 100% !important;
+        min-width: 700px !important;
     }
     .modal-header, .modal-footer, .modal-body {
         padding: 1rem !important;
