@@ -500,12 +500,14 @@
         (function restoreSidebarState() {
             const sidebar = document.getElementById('main-sidebar');
             const workspace = document.querySelector('.main-workspace');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
             if (!sidebar || !workspace) return;
 
             // Sur mobile, toujours fermer par défaut
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('sidebar-collapsed');
                 workspace.classList.add('sidebar-closed');
+                if (backdrop) backdrop.classList.remove('active');
                 return;
             }
 
@@ -517,19 +519,29 @@
             }
         })();
 
-        // Fermer sidebar automatiquement quand on clique sur un lien de menu
+        // Fermer sidebar automatiquement quand on clique sur un lien de menu (compatible iOS touch)
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.sidebar-menu .menu-item').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    // Stocker l'état "fermé" AVANT la navigation (sera lu au chargement suivant)
+                const handleMenuClick = function() {
+                    closeSidebar();
                     localStorage.setItem('sidebarClosed', '1');
-                });
+                };
+                link.addEventListener('click', handleMenuClick);
+                link.addEventListener('touchstart', handleMenuClick, { passive: true });
             });
 
-            // Fermer le backdrop mobile si on clique dessus
+            // Fermer le backdrop mobile si on clique ou touche dessus
             const backdrop = document.getElementById('mobile-sidebar-backdrop');
             if (backdrop) {
                 backdrop.addEventListener('click', closeSidebar);
+                backdrop.addEventListener('touchstart', closeSidebar, { passive: true });
+            }
+        });
+
+        // Gestion de la navigation iOS BFCache (Back/Forward)
+        window.addEventListener('pageshow', function() {
+            if (window.innerWidth <= 768) {
+                closeSidebar();
             }
         });
 

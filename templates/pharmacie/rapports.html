@@ -73,6 +73,7 @@
                 </tbody>
             </table>
         </div>
+        <div class="rapports-mobile-cards" id="top-meds-mobile-list"></div>
     </div>
 
     <!-- Category distributions -->
@@ -104,7 +105,33 @@
             </tbody>
         </table>
     </div>
+    <div class="rapports-mobile-cards" id="sales-history-mobile-list"></div>
 </div>
+
+<style>
+    .rapports-mobile-cards {
+        display: none;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+    }
+
+    .rapport-card-mobile {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        padding: 0.85rem;
+        box-shadow: 0 2px 8px rgba(6,78,59,0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive { display: none !important; }
+        .rapports-mobile-cards { display: flex !important; }
+    }
+</style>
 {% endblock %}
 
 
@@ -134,10 +161,13 @@
 
                 // 1. Render Top Meds
                 const tbody = document.getElementById('top-meds-tbody');
+                const mobTopContainer = document.getElementById('top-meds-mobile-list');
                 tbody.innerHTML = '';
+                if (mobTopContainer) mobTopContainer.innerHTML = '';
                 
                 if (data.top_medicaments.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucune vente enregistrée sur cette période</td></tr>`;
+                    if (mobTopContainer) mobTopContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Aucune vente enregistrée sur cette période</div>`;
                 } else {
                     data.top_medicaments.forEach(med => {
                         const tr = document.createElement('tr');
@@ -147,6 +177,22 @@
                             <td style="text-align: right; font-weight: 500;">${formatFCFA(med.total)}</td>
                         `;
                         tbody.appendChild(tr);
+
+                        if (mobTopContainer) {
+                            const mCard = document.createElement('div');
+                            mCard.className = 'rapport-card-mobile';
+                            mCard.innerHTML = `
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong style="color:#064e3b; font-size:0.92rem;">${med.nom}</strong>
+                                    <span class="badge" style="background:#e6f7ed; color:#047857; font-weight:800; font-size:0.8rem;">${med.quantite} unité(s)</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#047857; margin-top:2px;">
+                                    <span>Chiffre généré:</span>
+                                    <strong style="color:#10b981; font-size:0.92rem;">${formatFCFA(med.total)}</strong>
+                                </div>
+                            `;
+                            mobTopContainer.appendChild(mCard);
+                        }
                     });
                 }
 
@@ -159,10 +205,13 @@
             .then(res => res.json())
             .then(histData => {
                 const histTbody = document.getElementById('sales-history-tbody');
+                const mobSalesContainer = document.getElementById('sales-history-mobile-list');
                 histTbody.innerHTML = '';
+                if (mobSalesContainer) mobSalesContainer.innerHTML = '';
                 
                 if (histData.ventes.length === 0) {
                     histTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucune vente enregistrée dans la base de données</td></tr>`;
+                    if (mobSalesContainer) mobSalesContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Aucune vente enregistrée</div>`;
                     return;
                 }
 
@@ -187,6 +236,28 @@
                         <td style="text-align: right; ${totalStyle}">${formatFCFA(v.total)}</td>
                     `;
                     histTbody.appendChild(tr);
+
+                    if (mobSalesContainer) {
+                        const mCard = document.createElement('div');
+                        mCard.className = 'rapport-card-mobile';
+                        if (v.est_annulee) mCard.style.opacity = '0.7';
+                        mCard.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-family:monospace; color:#064e3b;">${v.numero_facture}</strong>
+                                ${v.est_annulee ? '<span class="badge" style="background:#fee2e2; color:#dc2626; font-size:0.7rem;">ANNULÉE</span>' : '<span class="badge" style="background:#e6f7ed; color:#047857; font-size:0.7rem;">VALIDÉE</span>'}
+                            </div>
+                            <div style="font-size:0.9rem; font-weight:700; color:#064e3b; margin-top:2px;">Client: ${v.client_nom}</div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#047857;">
+                                <div>${v.date_vente}</div>
+                                <div>Mode: <strong>${v.mode_paiement}</strong></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.85rem; border-top:1px solid #f0fdf4; padding-top:4px; margin-top:2px;">
+                                <span style="color:var(--text-muted);">Montant:</span>
+                                <strong style="${totalStyle}">${formatFCFA(v.total)}</strong>
+                            </div>
+                        `;
+                        mobSalesContainer.appendChild(mCard);
+                    }
                 });
             });
     }

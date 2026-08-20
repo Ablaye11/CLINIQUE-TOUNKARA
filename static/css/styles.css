@@ -936,7 +936,7 @@ html, body {
     .table-custom, table {
         display: table !important;
         width: 100% !important;
-        min-width: 700px !important;
+        min-width: 100% !important;
     }
     .modal-header, .modal-footer, .modal-body {
         padding: 1rem !important;
