@@ -465,15 +465,15 @@
             const tr = document.createElement('tr');
             tr.className = 'inventory-row';
             tr.innerHTML = `
-                <td><code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);">${item.code}</code></td>
-                <td><strong style="color: #ffffff; font-size: 0.92rem;">${item.nom}</strong></td>
-                <td><span style="color: var(--text-secondary); font-size: 0.85rem;">${item.categorie}</span></td>
-                <td style="text-align: right; color: var(--text-secondary);">${formatNumber(item.prix_achat)} F</td>
-                <td style="text-align: right; font-weight: 600; color: var(--text-primary);">
+                <td><code style="background: #e6f7ed; padding: 2px 6px; border-radius: 4px; color: #047857; font-weight: 700;">${item.code}</code></td>
+                <td><strong style="color: #064e3b; font-size: 0.92rem;">${item.nom}</strong></td>
+                <td><span style="color: #047857; font-size: 0.85rem;">${item.categorie}</span></td>
+                <td style="text-align: right; color: #047857;">${formatNumber(item.prix_achat)} F</td>
+                <td style="text-align: right; font-weight: 600; color: #064e3b;">
                     ${formatNumber(item.prix_vente)} F
-                    <div style="font-size: 0.7rem; color: ${margeColor}; font-weight: 500;">+${formatNumber(margeUnitaire)} F/u</div>
+                    <div style="font-size: 0.7rem; color: ${margeColor}; font-weight: 700;">+${formatNumber(margeUnitaire)} F/u</div>
                 </td>
-                <td style="text-align: center; font-weight: 800; font-size: 1.05rem; color: #ffffff;">${item.stock_actuel}</td>
+                <td style="text-align: center; font-weight: 800; font-size: 1.05rem; color: #064e3b;">${item.stock_actuel}</td>
                 <td style="text-align: center; font-weight: 700; color: #10b981;" class="print-hide">${item.entrees_periode > 0 ? '+' + item.entrees_periode : '0'}</td>
                 <td style="text-align: center; font-weight: 700; color: #ef4444;" class="print-hide">${item.sorties_periode > 0 ? '-' + item.sorties_periode : '0'}</td>
                 <td style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 0.95rem;">

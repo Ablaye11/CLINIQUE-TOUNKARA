@@ -176,12 +176,12 @@
     </div>
 
     <!-- Barre d'information bas de page -->
-    <div style="padding: 0.6rem 1rem; background: rgba(15,23,42,0.85); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);" id="meds-count-container">
-            <i class="fa-solid fa-pills" style="color: var(--color-primary); margin-right: 0.4rem;"></i>
+    <div style="padding: 0.6rem 1rem; background: #f0fdf4; border-top: 1px solid #a7f3d0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div style="font-size: 0.82rem; font-weight: 700; color: #064e3b;" id="meds-count-container">
+            <i class="fa-solid fa-pills" style="color: #10b981; margin-right: 0.4rem;"></i>
             <span id="meds-count-text">Chargement des médicaments...</span>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted);">
+        <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">
             <i class="fa-solid fa-check-double" style="margin-right: 0.3rem; color: #10b981;"></i>
             100% des données visibles sur votre écran
         </div>
@@ -344,14 +344,14 @@
                     }
 
                     tr.innerHTML = `
-                        <td style="font-family: monospace; font-weight: bold; font-size: 0.78rem; color: var(--text-secondary);"><code>${med.code}</code></td>
-                        <td class="editable" data-field="nom" data-id="${med.id}"><strong style="color: #ffffff; font-size: 0.88rem;">${med.nom}</strong></td>
-                        <td class="editable" data-field="categorie" data-id="${med.id}"><span style="color: var(--text-secondary); font-size: 0.8rem;">${med.categorie}</span></td>
-                        <td class="editable" data-field="stock" data-id="${med.id}" style="font-weight: 800; font-size: 0.95rem; text-align: center; color: #ffffff;">${med.stock}</td>
-                        <td class="editable" data-field="prix_achat" data-id="${med.id}" style="text-align: right; color: var(--text-secondary); font-size: 0.82rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_achat)} F</td>
-                        <td class="editable" data-field="prix_vente" data-id="${med.id}" style="color: var(--color-primary); font-weight: bold; text-align: right; font-size: 0.88rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_vente)} F</td>
-                        <td class="editable" data-field="date_expiration" data-id="${med.id}" style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td>
-                        <td style="font-size: 0.8rem; color: var(--text-secondary); max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${med.fournisseur_nom || ''}">${med.fournisseur_nom || 'Aucun'}</td>
+                        <td style="font-family: monospace; font-weight: bold; font-size: 0.78rem; color: #047857;"><code>${med.code}</code></td>
+                        <td class="editable" data-field="nom" data-id="${med.id}"><strong style="color: #064e3b; font-size: 0.88rem;">${med.nom}</strong></td>
+                        <td class="editable" data-field="categorie" data-id="${med.id}"><span style="color: #047857; font-size: 0.8rem;">${med.categorie}</span></td>
+                        <td class="editable" data-field="stock" data-id="${med.id}" style="font-weight: 800; font-size: 0.95rem; text-align: center; color: #064e3b;">${med.stock}</td>
+                        <td class="editable" data-field="prix_achat" data-id="${med.id}" style="text-align: right; color: #047857; font-size: 0.82rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_achat)} F</td>
+                        <td class="editable" data-field="prix_vente" data-id="${med.id}" style="color: #10b981; font-weight: bold; text-align: right; font-size: 0.88rem;">${new Intl.NumberFormat('fr-FR').format(med.prix_vente)} F</td>
+                        <td class="editable" data-field="date_expiration" data-id="${med.id}" style="font-size: 0.8rem; color: #047857;">${new Date(med.date_expiration).toLocaleDateString('fr-FR')}</td>
+                        <td style="font-size: 0.8rem; color: #047857; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${med.fournisseur_nom || ''}">${med.fournisseur_nom || 'Aucun'}</td>
                         <td style="text-align: center;">${badgeHtml}</td>
                         <td style="text-align: center;">
                             <div style="display: flex; gap: 0.25rem; justify-content: center;">

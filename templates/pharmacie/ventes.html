@@ -875,11 +875,11 @@
                     <h5 title="${item.nom}">${item.nom}</h5>
                     <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.1rem;">
                         <small>${new Intl.NumberFormat('fr-FR').format(item.prix_vente)} F/u</small>
-                        <div style="display:flex; align-items:center; gap:2px; background:rgba(255,255,255,0.04); border:1px solid var(--border-color); border-radius:4px; padding:0 3px;">
+                        <div style="display:flex; align-items:center; gap:2px; background:#f0fdf4; border:1px solid #a7f3d0; border-radius:4px; padding:0 3px;">
                             <input type="number" min="0" max="100" value="${remiseVal}" 
                                    oninput="changeCartRemise(${index}, this.value)" 
-                                   style="width:32px; background:transparent; border:none; color:white; font-size:0.7rem; padding:0; text-align:center; outline:none;"
-                                   placeholder="0"><span style="font-size:0.65rem; color:var(--text-muted);">%</span>
+                                   style="width:32px; background:transparent; border:none; color:#064e3b; font-weight:bold; font-size:0.75rem; padding:0; text-align:center; outline:none;"
+                                   placeholder="0"><span style="font-size:0.65rem; color:#047857; font-weight:bold;">%</span>
                         </div>
                     </div>
                 </div>
