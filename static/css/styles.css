@@ -729,7 +729,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 99999;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition-fast);

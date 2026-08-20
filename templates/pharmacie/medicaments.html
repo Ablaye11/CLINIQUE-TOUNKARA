@@ -296,6 +296,7 @@
             <button class="btn btn-primary" onclick="triggerBarcodeSearch()">Rechercher</button>
         </div>
     </div>
+</div>
 <!-- Modal Confirmation Suppression Médicament -->
 <div class="modal" id="confirm-delete-med-modal">
     <div class="modal-content" style="max-width: 480px; border: 1px solid #fca5a5; box-shadow: 0 20px 40px rgba(4,120,87,0.15); background: #ffffff; color: #064e3b;">
@@ -358,7 +359,9 @@
                     return;
                 }
 
+                window.medicamentsMap = {};
                 data.medicaments.forEach(med => {
+                    window.medicamentsMap[med.id] = med;
                     const tr = document.createElement('tr');
                     tr.id = `med-row-${med.id}`;
                     
@@ -383,8 +386,8 @@
                         <td style="text-align: center;">${badgeHtml}</td>
                         <td style="text-align: center;">
                             <div style="display: flex; gap: 0.25rem; justify-content: center;">
-                                <button class="btn-action-icon edit" onclick="editMedicament(${JSON.stringify(med).replace(/"/g, '&quot;')})" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button class="btn-action-icon delete" onclick="deleteMedicament(${med.id}, '${med.nom.replace(/'/g, "\\'")}')" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
+                                <button class="btn-action-icon edit" onclick="editMedicament(${med.id})" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button class="btn-action-icon delete" onclick="deleteMedicament(${med.id})" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </td>
                     `;
@@ -522,19 +525,21 @@
         document.getElementById('med-form-modal').classList.add('active');
     }
 
-    function editMedicament(med) {
+    function editMedicament(id) {
+        const med = typeof id === 'object' ? id : (window.medicamentsMap ? window.medicamentsMap[id] : null);
+        if (!med) return;
         document.getElementById('med-modal-title').innerText = 'Modifier Médicament';
         document.getElementById('med-id').value = med.id;
         document.getElementById('med-code').value = med.code;
         document.getElementById('med-nom').value = med.nom;
         document.getElementById('med-categorie').value = med.categorie;
         document.getElementById('med-stock').value = med.stock;
-        document.getElementById('med-stock').disabled = false; // Laisser l'admin ajuster librement
+        document.getElementById('med-stock').disabled = false;
         document.getElementById('med-stock-min').value = med.stock_minimum;
         document.getElementById('med-prix-achat').value = med.prix_achat;
         document.getElementById('med-prix-vente').value = med.prix_vente;
         document.getElementById('med-date-expiration').value = med.date_expiration;
-        document.getElementById('med-fournisseur').value = med.fournisseur_id;
+        document.getElementById('med-fournisseur').value = med.fournisseur_id || '';
 
         document.getElementById('med-form-modal').classList.add('active');
     }
@@ -580,10 +585,12 @@
 
     let medIdToDelete = null;
 
-    function deleteMedicament(id, nom) {
+    function deleteMedicament(id) {
+        const med = window.medicamentsMap ? window.medicamentsMap[id] : null;
+        if (!med) return;
         medIdToDelete = id;
         const nameEl = document.getElementById('delete-med-name');
-        if (nameEl) nameEl.innerText = nom;
+        if (nameEl) nameEl.innerText = med.nom;
         const modal = document.getElementById('confirm-delete-med-modal');
         if (modal) modal.classList.add('active');
     }
