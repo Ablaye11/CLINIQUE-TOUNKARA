@@ -215,7 +215,35 @@
             </tfoot>
         </table>
     </div>
+
+    <!-- Vue Cartes Mobile pour l'inventaire -->
+    <div class="inv-mobile-cards" id="inventory-mobile-list"></div>
 </div>
+
+<style>
+    .inv-mobile-cards {
+        display: none;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 0.75rem 0;
+    }
+
+    .inv-card-mobile {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 14px;
+        padding: 0.95rem;
+        box-shadow: 0 4px 12px rgba(6,78,59,0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive { display: none !important; }
+        .inv-mobile-cards { display: flex !important; }
+    }
+</style>
 
 <!-- Bloc Signature pour l'impression officielle -->
 <div class="print-only" style="display: none; margin-top: 50px; page-break-inside: avoid;">
@@ -429,10 +457,13 @@
 
     function renderInventoryTable(items) {
         const tbody = document.getElementById('inventory-tbody');
+        const mobContainer = document.getElementById('inventory-mobile-list');
         tbody.innerHTML = '';
+        if (mobContainer) mobContainer.innerHTML = '';
 
         if (items.length === 0) {
             tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 2.5rem; color: var(--text-secondary); font-size: 0.95rem;">Aucun produit ne correspond aux critères.</td></tr>`;
+            if (mobContainer) mobContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun produit ne correspond aux critères.</div>`;
             return;
         }
 
@@ -483,6 +514,35 @@
                 <td style="text-align: center;">${badgeHtml}</td>
             `;
             tbody.appendChild(tr);
+
+            // Carte Mobile
+            if (mobContainer) {
+                const mCard = document.createElement('div');
+                mCard.className = 'inv-card-mobile';
+                mCard.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div>
+                            <div style="font-size:0.95rem; font-weight:800; color:#064e3b;">${item.nom}</div>
+                            <div style="font-size:0.75rem; color:#047857; font-family:monospace; margin-top:2px;">Code: <code>${item.code}</code> · ${item.categorie}</div>
+                        </div>
+                        <div>${badgeHtml}</div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; background:#f0fdf4; padding:0.6rem 0.75rem; border-radius:8px; border:1px solid #e6f7ed; font-size:0.82rem;">
+                        <div>Stock Restant: <strong style="color:#064e3b; font-size:1rem;">${item.stock_actuel}</strong></div>
+                        <div>Valeur Vente: <strong style="color:#10b981; font-size:0.92rem;">${formatFCFA(item.valeur_restante_vente)}</strong></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.78rem; color:#047857;">
+                        <div>Prix Achat: <strong>${formatNumber(item.prix_achat)} F</strong></div>
+                        <div>Prix Vente: <strong style="color:#10b981;">${formatNumber(item.prix_vente)} F</strong></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); border-top:1px solid #f0fdf4; padding-top:4px;">
+                        <div>Entrées: <strong style="color:#10b981;">+${item.entrees_periode}</strong></div>
+                        <div>Ventes: <strong style="color:#ef4444;">-${item.sorties_periode}</strong></div>
+                        <div>Capital Achat: <strong>${formatNumber(item.valeur_restante_achat)} F</strong></div>
+                    </div>
+                `;
+                mobContainer.appendChild(mCard);
+            }
         });
 
         // Pied de tableau : totaux exacts synchronisés

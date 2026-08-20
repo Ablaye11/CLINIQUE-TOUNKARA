@@ -37,7 +37,35 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Vue Cartes Mobile pour Fournisseurs -->
+        <div class="fourn-mobile-cards" id="fournisseurs-mobile-list"></div>
     </div>
+<style>
+    .fourn-mobile-cards {
+        display: none;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.5rem 0;
+    }
+
+    .fourn-card-mobile {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        padding: 0.85rem;
+        box-shadow: 0 2px 8px rgba(6,78,59,0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive { display: none !important; }
+        .fourn-mobile-cards { display: flex !important; }
+    }
+</style>
 
     <!-- Right pane: Supplier details view -->
     <div class="chart-card" id="fournisseur-info-card" style="display: flex; flex-direction: column;">
@@ -104,10 +132,13 @@
 
     function renderFournisseurs() {
         const tbody = document.getElementById('fournisseurs-tbody');
+        const mobContainer = document.getElementById('fournisseurs-mobile-list');
         tbody.innerHTML = '';
+        if (mobContainer) mobContainer.innerHTML = '';
 
         if (fournisseurs.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun fournisseur enregistré</td></tr>`;
+            if (mobContainer) mobContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun fournisseur enregistré</div>`;
             return;
         }
 
@@ -117,6 +148,34 @@
             tr.innerHTML = `<td><strong>${f.nom}</strong></td><td>${f.telephone}</td><td>${f.email}</td><td style="color: var(--text-secondary); font-size: 0.85rem;">${f.adresse}</td><td style="text-align: center; font-weight: bold;">${f.nb_produits}</td><td style="text-align: right;"><div style="display: flex; gap: 0.4rem; justify-content: flex-end;"><button class="btn-action-icon edit" onclick="editFournisseur(${JSON.stringify(f).replace(/"/g, '&quot;')}); event.stopPropagation();" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn-action-icon delete" onclick="deleteFournisseur(${f.id}, '${f.nom.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button></div></td>`;
             tr.addEventListener('click', () => showSuppliedMeds(f));
             tbody.appendChild(tr);
+
+            if (mobContainer) {
+                const mCard = document.createElement('div');
+                mCard.className = 'fourn-card-mobile';
+                mCard.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="font-size:0.95rem; font-weight:800; color:#064e3b;">${f.nom}</div>
+                        <span class="badge" style="background:#e6f7ed; color:#047857; font-weight:700; font-size:0.75rem;">${f.nb_produits} produit(s)</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:#047857;">
+                        <div><i class="fa-solid fa-phone"></i> ${f.telephone || 'Non renseigné'}</div>
+                        <div><i class="fa-solid fa-envelope"></i> ${f.email || 'Non renseigné'}</div>
+                        <div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${f.adresse || ''}</div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.3rem; border-top:1px solid #f0fdf4; padding-top:0.4rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="showSuppliedMeds(${JSON.stringify(f).replace(/"/g, '&quot;')});" style="flex:2; font-weight:700; padding:0.35rem;">
+                            <i class="fa-solid fa-boxes-stacked"></i> Produits
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="editFournisseur(${JSON.stringify(f).replace(/"/g, '&quot;')});" style="flex:1; font-weight:700; padding:0.35rem;">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteFournisseur(${f.id}, '${f.nom.replace(/'/g, "\\'")}');" style="flex:1; font-weight:700; background:#dc2626; color:white; border:none; padding:0.35rem;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                mobContainer.appendChild(mCard);
+            }
         });
     }
 
