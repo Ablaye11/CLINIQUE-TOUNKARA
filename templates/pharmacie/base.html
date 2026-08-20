@@ -390,7 +390,7 @@
             document.getElementById('global-details-modal').classList.remove('active');
         }
 
-        // Mettre à jour le badge d'alerte dans la sidebar périodiquement
+        // Mettre à jour le badge d'alerte en arrière-plan (sans bloquer le chargement initial)
         function updateAlertBadge() {
             fetch('/api/medicaments/')
                 .then(res => res.json())
@@ -410,50 +410,15 @@
                             badge.style.display = 'none';
                         }
                     }
-                });
+                })
+                .catch(() => {});
         }
         
-        // Exécuter l'update au chargement et toutes les 10 secondes (sync multi-postes)
-        updateAlertBadge();
-        setInterval(updateAlertBadge, 10000);
-
-        // Charger les informations de l'utilisateur connecté
-        function loadCurrentUser() {
-            fetch('/api/me/')
-                .then(res => {
-                    if (res.status === 401 || res.status === 403) {
-                        window.location.href = '/login/';
-                        return;
-                    }
-                    return res.json();
-                })
-                .then(user => {
-                    if (!user) return;
-                    
-                    const avatarEl = document.querySelector('.user-avatar');
-                    if (avatarEl) {
-                        avatarEl.textContent = user.initials || 'U';
-                    }
-                    
-                    const userInfoEl = document.querySelector('.user-info');
-                    if (userInfoEl) {
-                        const nameSpan = userInfoEl.querySelector('span:not(.role)');
-                        const roleSpan = userInfoEl.querySelector('span.role');
-                        if (nameSpan) nameSpan.textContent = user.display_name;
-                        if (roleSpan) {
-                            let roleText = 'Pharmacie';
-                            if (user.role === 'superadmin') roleText = 'Super-Admin';
-                            else if (user.role === 'admin') roleText = 'Admin';
-                            else if (user.role === 'caissier') roleText = 'Caissier';
-                            roleSpan.textContent = roleText;
-                        }
-                    }
-                })
-                .catch(err => console.error("Erreur lors de la récupération des infos utilisateur:", err));
-        }
-
-        // Appeler au chargement
-        document.addEventListener('DOMContentLoaded', loadCurrentUser);
+        // Exécuter l'update 1.5 seconde APRÈS le chargement de la page pour une fluidité maximale
+        setTimeout(() => {
+            updateAlertBadge();
+            setInterval(updateAlertBadge, 15000);
+        }, 1500);
 
         // ============================================================
         // SIDEBAR — Ferme automatiquement au clic sur un lien de menu
@@ -519,18 +484,18 @@
             }
         })();
 
-        // Fermer sidebar automatiquement quand on clique sur un lien de menu (compatible iOS touch)
+        // Fermer sidebar automatiquement quand on clique sur un lien de menu (navigation fluide)
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.sidebar-menu .menu-item').forEach(function(link) {
-                const handleMenuClick = function() {
-                    closeSidebar();
+                link.addEventListener('click', function() {
                     localStorage.setItem('sidebarClosed', '1');
-                };
-                link.addEventListener('click', handleMenuClick);
-                link.addEventListener('touchstart', handleMenuClick, { passive: true });
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeSidebar, 150);
+                    }
+                });
             });
 
-            // Fermer le backdrop mobile si on clique ou touche dessus
+            // Fermer le backdrop mobile si on clique ou touche le fond sombre
             const backdrop = document.getElementById('mobile-sidebar-backdrop');
             if (backdrop) {
                 backdrop.addEventListener('click', closeSidebar);
