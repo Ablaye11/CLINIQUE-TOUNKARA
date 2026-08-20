@@ -224,7 +224,7 @@ def api_medicaments_liste(request):
     exp_filter = request.GET.get('exp', '') # 'proche' (30j) ou 'expired'
 
     aujourdhui = date.today()
-    meds = Medicament.objects.all()
+    meds = Medicament.objects.select_related('fournisseur').all()
 
     if query:
         meds = meds.filter(Q(nom__icontains=query) | Q(code__icontains=query) | Q(categorie__icontains=query))
