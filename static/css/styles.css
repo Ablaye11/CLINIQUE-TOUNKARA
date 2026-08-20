@@ -828,9 +828,35 @@ html, body {
     width: calc(100vw - 260px);
 }
 
+/* Layout Grids */
+.grid-split-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.grid-split-2-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+.grid-split-1-2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+}
+
 /* =============================================
    RESPONSIVE DESIGN (MOBILE & TABLETS)
    ============================================= */
+@media (max-width: 1024px) {
+    .grid-split-2, .grid-split-2-1, .grid-split-1-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
 @media (max-width: 768px) {
     .top-header {
         height: auto !important;
