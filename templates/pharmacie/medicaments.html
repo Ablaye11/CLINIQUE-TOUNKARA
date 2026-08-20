@@ -57,7 +57,7 @@
     }
 
     .table-responsive {
-        overflow-x: hidden !important; /* ✅ PAS de scroll horizontal gauche/droite */
+        overflow-x: auto;
         overflow-y: auto !important;
         max-height: calc(100vh - 280px) !important;
         width: 100%;
@@ -175,7 +175,7 @@
     </div>
 </div>
 
-<!-- Main Table (100% visible sans scroll horizontal) -->
+<!-- Main Table (Desktop) -->
 <div class="card-table" style="padding: 0; overflow: hidden;">
     <div class="table-responsive">
         <table class="table-custom" id="meds-table">
@@ -199,9 +199,6 @@
         </table>
     </div>
 
-    <!-- Vue Cartes Mobile pour Smartphones -->
-    <div class="meds-mobile-cards" id="medicaments-mobile-list"></div>
-
     <!-- Barre d'information bas de page -->
     <div style="padding: 0.6rem 1rem; background: #f0fdf4; border-top: 1px solid #a7f3d0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
         <div style="font-size: 0.82rem; font-weight: 700; color: #064e3b;" id="meds-count-container">
@@ -214,6 +211,9 @@
         </div>
     </div>
 </div>
+
+<!-- Vue Cartes Mobile pour Smartphones (HORS card-table pour ne pas être coupé) -->
+<div class="meds-mobile-cards" id="medicaments-mobile-list"></div>
 
 <!-- Modal Ajout/Modification Médicament -->
 <div class="modal" id="med-form-modal">
