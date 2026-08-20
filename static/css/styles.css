@@ -806,12 +806,14 @@ html, body {
     font-weight: 700;
 }
 
-/* Mobile Sidebar Backdrop */
+/* Mobile Sidebar Backdrop — couvre uniquement la zone de contenu, pas la sidebar */
 .mobile-sidebar-backdrop {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.55);
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
@@ -821,6 +823,9 @@ html, body {
 .mobile-sidebar-backdrop.active {
     opacity: 1;
     pointer-events: all;
+    /* Le backdrop commence APRÈS la sidebar (260px) pour ne jamais la couvrir */
+    left: 260px;
+    width: calc(100vw - 260px);
 }
 
 /* Print Styles */
