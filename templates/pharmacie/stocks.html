@@ -94,8 +94,36 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Vue Cartes Mobile pour l'historique des stocks -->
+        <div class="stocks-mobile-cards" id="mouv-history-mobile-list"></div>
     </div>
 </div>
+<style>
+    .stocks-mobile-cards {
+        display: none;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .stock-card-mobile {
+        background: #ffffff;
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        padding: 0.85rem;
+        box-shadow: 0 2px 8px rgba(6,78,59,0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    @media (max-width: 768px) {
+        .table-responsive { display: none !important; }
+        .stocks-mobile-cards { display: flex !important; }
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -139,10 +167,13 @@
 
     function renderHistory(items) {
         const tbody = document.getElementById('mouv-history-tbody');
+        const mobContainer = document.getElementById('mouv-history-mobile-list');
         tbody.innerHTML = '';
+        if (mobContainer) mobContainer.innerHTML = '';
 
         if (items.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun mouvement de stock enregistré</td></tr>`;
+            if (mobContainer) mobContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">Aucun mouvement de stock enregistré</div>`;
             return;
         }
 
@@ -161,6 +192,26 @@
 
             tr.innerHTML = `<td>${m.date_mouvement}</td><td><strong>${m.medicament_nom}</strong> <small style="color: var(--text-muted); display: block;">${m.medicament_code}</small></td><td><span class="badge-status ${badgeClass}">${typeText}</span></td><td style="font-family: monospace; font-size: 0.85rem;">${m.numero_lot || '-'}</td><td style="text-align: center; font-weight: bold;">${m.quantite}</td><td style="color: var(--text-secondary); font-size: 0.85rem;">${m.motif}</td>`;
             tbody.appendChild(tr);
+
+            if (mobContainer) {
+                const mCard = document.createElement('div');
+                mCard.className = 'stock-card-mobile';
+                mCard.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="badge-status ${badgeClass}">${typeText}</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem;">${m.date_mouvement}</small>
+                    </div>
+                    <div style="font-size:0.92rem; font-weight:800; color:#064e3b; margin-top:2px;">${m.medicament_nom}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#047857;">
+                        <div>Qté: <strong style="color:#064e3b; font-size:0.9rem;">${m.quantite}</strong></div>
+                        <div>Lot: <code>${m.numero_lot || '-'}</code></div>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-style:italic; border-top:1px solid #f0fdf4; padding-top:4px;">
+                        Motif: ${m.motif}
+                    </div>
+                `;
+                mobContainer.appendChild(mCard);
+            }
         });
     }
 
