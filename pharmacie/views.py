@@ -566,6 +566,26 @@ def api_vente_annuler(request, vente_id):
     return JsonResponse({'success': False, 'error': 'Méthode invalide'}, status=405)
 
 
+# ✅ NOUVEAU — Remise à zéro complète des données de test (médicaments, ventes, stocks, fournisseurs)
+@csrf_exempt
+@transaction.atomic
+@api_role_required('superadmin')
+def api_reinitialiser_donnees(request):
+    """Purge toutes les données de test en conservant les comptes utilisateurs."""
+    if request.method == 'POST':
+        try:
+            LigneVente.objects.all().delete()
+            Vente.objects.all().delete()
+            MouvementStock.objects.all().delete()
+            Medicament.objects.all().delete()
+            Fournisseur.objects.all().delete()
+            return JsonResponse({'success': True, 'message': 'Toutes les données de test ont été effacées. La base est prête pour les données réelles !'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    return JsonResponse({'success': False, 'error': 'Méthode invalide'}, status=405)
+
+
+
 @api_role_required('superadmin', 'admin', 'caissier')
 def api_ventes_historique(request):
     # ✅ AMÉLIORATION — Filtre optionnel par période

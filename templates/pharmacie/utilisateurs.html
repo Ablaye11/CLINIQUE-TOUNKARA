@@ -243,6 +243,92 @@
         }
     }
 
+<!-- Section Maintenance & Remise à Zéro avant Livraison -->
+<div style="margin-top: 2rem; padding: 1.25rem; background: #fff5f5; border: 1px solid #fca5a5; border-radius: 14px;">
+    <h3 style="color: #dc2626; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Maintenance — Remise à Zéro avant Livraison Client
+    </h3>
+    <p style="color: #991b1b; font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.5;">
+        Cliquez sur ce bouton pour <strong>effacer toutes les données de démonstration/test</strong> (médicaments fictifs, historique de ventes, mouvements de stock, fournisseurs) afin de livrer une application 100% propre à la clinique. <br>
+        <em>Note : Vos comptes d'accès (Super-Admin, Caissiers) sont conservés.</em>
+    </p>
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn" onclick="openResetModal()" style="background: #dc2626; color: white; border: none; font-weight: 800; padding: 0.65rem 1.25rem; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(220,38,38,0.25);">
+            <i class="fa-solid fa-trash-can"></i> Remettre la Base à Zéro (Purger les Tests)
+        </button>
+        <button class="btn btn-secondary" onclick="seedDemoData()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700; padding: 0.65rem 1.25rem; font-size: 0.88rem;">
+            <i class="fa-solid fa-database"></i> Charger les Données de Démo
+        </button>
+    </div>
+</div>
+
+<!-- Modal Confirmation Remise à Zéro -->
+<div class="modal" id="reset-db-modal">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid #fca5a5; background: #ffffff;">
+        <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; border-radius: 20px 20px 0 0;">
+            <h3 style="color: #dc2626; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Confirmer la Remise à Zéro
+            </h3>
+            <button class="modal-close" onclick="closeResetModal()" style="color: #dc2626;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+            <p style="font-size: 0.98rem; color: #064e3b; font-weight: 600; line-height: 1.6;">
+                Êtes-vous absolument sûr de vouloir purger la base de données ?
+            </p>
+            <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 1rem; color: #991b1b; font-size: 0.85rem; text-align: left;">
+                ⚠️ <strong>Cette action va supprimer :</strong>
+                <ul style="margin-top: 0.4rem; padding-left: 1.2rem;">
+                    <li>Tous les médicaments enregistrés</li>
+                    <li>Tout l'historique des ventes et factures</li>
+                    <li>Tous les mouvements et alertes de stock</li>
+                    <li>Tous les fournisseurs</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer" style="background: #f0fdf4; border-top: 1px solid #e6f7ed; border-radius: 0 0 20px 20px;">
+            <button class="btn btn-secondary" onclick="closeResetModal()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700;">Annuler</button>
+            <button class="btn" onclick="executeResetDB()" style="background: #dc2626; color: white; font-weight: 800; border: none; padding: 0.6rem 1.2rem;">
+                <i class="fa-solid fa-trash-can"></i> Oui, tout effacer
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openResetModal() { document.getElementById('reset-db-modal').classList.add('active'); }
+    function closeResetModal() { document.getElementById('reset-db-modal').classList.remove('active'); }
+    
+    function executeResetDB() {
+        fetch('/api/reinitialiser/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message);
+                closeResetModal();
+                setTimeout(() => { window.location.href = '/medicaments/'; }, 1000);
+            } else {
+                showToast(data.error || 'Erreur lors de la réinitialisation', 'danger');
+            }
+        });
+    }
+
+    function seedDemoData() {
+        fetch('/api/peupler/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message);
+                setTimeout(() => { window.location.href = '/medicaments/'; }, 1000);
+            }
+        });
+    }
+
     loadUsers();
 </script>
 {% endblock %}

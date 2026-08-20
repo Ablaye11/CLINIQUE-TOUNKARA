@@ -40,6 +40,7 @@ urlpatterns = [
     path('api/inventaire/', views.api_inventaire_data, name='api_inventaire_data'),
     path('api/inventaire/export/', views.api_inventaire_export_csv, name='api_inventaire_export_csv'),
     path('api/peupler/', views.api_peupler_db, name='api_peupler_db'),
+    path('api/reinitialiser/', views.api_reinitialiser_donnees, name='api_reinitialiser_donnees'),
 
     # Import Excel (.xlsx) / CSV en masse
     path('api/import/template/', views.api_import_template, name='api_import_template'),
