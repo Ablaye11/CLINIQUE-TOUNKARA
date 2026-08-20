@@ -9,9 +9,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from datetime import date, timedelta
 import json
+import unicodedata
 from decimal import Decimal, InvalidOperation
 import csv
 import io
+
+def strip_accents(s):
+    """Normalize string by removing accents for case-insensitive accent-agnostic comparison."""
+    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 from .models import Fournisseur, Medicament, MouvementStock, Vente, LigneVente
 
@@ -226,12 +231,24 @@ def api_medicaments_liste(request):
     if cat:
         meds = meds.filter(categorie=cat)
         
+    # Mapping des valeurs frontend (sans accents) vers les valeurs du modèle
+    STATUT_MAP = {
+        'expire': 'expiré',
+        'expiré': 'expiré',
+        'rupture': 'rupture',
+        'disponible': 'disponible',
+        'stock faible': 'stock faible',
+    }
+
     # Filtrer par statut
     data = []
     for m in meds:
         statut = m.statut
-        if statut_filter and statut.lower() != statut_filter.lower():
-            continue
+        if statut_filter:
+            statut_filter_normalized = STATUT_MAP.get(statut_filter.lower(), statut_filter.lower())
+            if strip_accents(statut.lower()) != strip_accents(statut_filter_normalized):
+                continue
+
             
         # Check expiration filter
         if exp_filter == 'expired' and m.date_expiration > aujourdhui:
