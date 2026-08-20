@@ -85,6 +85,25 @@
     <!-- Rempli en JS -->
 </div>
 
+<!-- Section Maintenance & Remise à Zéro avant Livraison -->
+<div style="margin-top: 2rem; padding: 1.25rem; background: #fff5f5; border: 1px solid #fca5a5; border-radius: 14px;">
+    <h3 style="color: #dc2626; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+        <i class="fa-solid fa-triangle-exclamation"></i> Maintenance — Remise à Zéro avant Livraison Client
+    </h3>
+    <p style="color: #991b1b; font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.5;">
+        Cliquez sur ce bouton pour <strong>effacer toutes les données de démonstration/test</strong> (médicaments fictifs, historique de ventes, mouvements de stock, fournisseurs) afin de livrer une application 100% propre à la clinique. <br>
+        <em>Note : Vos comptes d'accès (Super-Admin, Caissiers) sont conservés.</em>
+    </p>
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn" onclick="openResetModal()" style="background: #dc2626; color: white; border: none; font-weight: 800; padding: 0.65rem 1.25rem; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(220,38,38,0.25);">
+            <i class="fa-solid fa-trash-can"></i> Remettre la Base à Zéro (Purger les Tests)
+        </button>
+        <button class="btn btn-secondary" onclick="seedDemoData()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700; padding: 0.65rem 1.25rem; font-size: 0.88rem;">
+            <i class="fa-solid fa-database"></i> Charger les Données de Démo
+        </button>
+    </div>
+</div>
+
 <!-- Modal Ajout/Modification Utilisateur -->
 <div class="modal" id="user-modal">
     <div class="modal-content" style="max-width:460px;">
@@ -126,6 +145,38 @@
     </div>
 </div>
 
+<!-- Modal Confirmation Remise à Zéro -->
+<div class="modal" id="reset-db-modal">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid #fca5a5; background: #ffffff;">
+        <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; border-radius: 20px 20px 0 0;">
+            <h3 style="color: #dc2626; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Confirmer la Remise à Zéro
+            </h3>
+            <button class="modal-close" onclick="closeResetModal()" style="color: #dc2626;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem; text-align: center;">
+            <p style="font-size: 0.98rem; color: #064e3b; font-weight: 600; line-height: 1.6;">
+                Êtes-vous absolument sûr de vouloir purger la base de données ?
+            </p>
+            <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 1rem; color: #991b1b; font-size: 0.85rem; text-align: left;">
+                ⚠️ <strong>Cette action va supprimer :</strong>
+                <ul style="margin-top: 0.4rem; padding-left: 1.2rem;">
+                    <li>Tous les médicaments enregistrés</li>
+                    <li>Tout l'historique des ventes et factures</li>
+                    <li>Tous les mouvements et alertes de stock</li>
+                    <li>Tous les fournisseurs</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer" style="background: #f0fdf4; border-top: 1px solid #e6f7ed; border-radius: 0 0 20px 20px;">
+            <button class="btn btn-secondary" onclick="closeResetModal()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700;">Annuler</button>
+            <button class="btn" onclick="executeResetDB()" style="background: #dc2626; color: white; font-weight: 800; border: none; padding: 0.6rem 1.2rem;">
+                <i class="fa-solid fa-trash-can"></i> Oui, tout effacer
+            </button>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -153,45 +204,46 @@
                     const initials = u.nom.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
 
                     const actionsHtml = u.role !== 'superadmin' ? `
-                        <button class="btn-action-icon edit" onclick="editUser(${JSON.stringify(u).replace(/"/g,'&quot;')})" title="Modifier">
-                            <i class="fa-solid fa-pen-to-square"></i>
+                        <button class="btn btn-secondary btn-action-icon" onclick="editUser(${u.id}, '${u.nom.replace(/'/g, "\\'")}', '${u.username}', '${u.role}')" title="Modifier">
+                            <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="btn-action-icon delete" onclick="deleteUser(${u.id}, '${u.nom.replace(/'/g,"\\'")}', '${u.role}')" title="Supprimer">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>` : `<span style="font-size:0.75rem;color:var(--text-muted);">Compte protégé</span>`;
+                        <button class="btn btn-secondary btn-action-icon" style="color:var(--color-danger);" onclick="deleteUser(${u.id}, '${u.nom.replace(/'/g, "\\'")}', '${u.role}')" title="Supprimer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    ` : '<span style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">Compte protégé</span>';
 
-                    grid.innerHTML += `
-                        <div class="user-card">
-                            <div class="user-avatar-lg ${avatarClass}">${initials}</div>
-                            <div class="user-card-info">
-                                <div class="user-card-name">${u.nom}</div>
-                                <div class="user-card-username"><i class="fa-solid fa-at" style="opacity:0.5;margin-right:2px;"></i>${u.username}</div>
-                                <span class="role-badge ${roleClass}"><i class="fa-solid ${roleIcon}"></i> ${roleName}</span>
-                            </div>
-                            <div class="user-card-actions">${actionsHtml}</div>
-                        </div>`;
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-avatar-lg ${avatarClass}">${initials}</div>
+                        <div class="user-card-info">
+                            <div class="user-card-name">${u.nom}</div>
+                            <div class="user-card-username">@${u.username}</div>
+                            <span class="role-badge ${roleClass}"><i class="fa-solid ${roleIcon}"></i> ${roleName}</span>
+                        </div>
+                        <div class="user-card-actions">${actionsHtml}</div>
+                    `;
+                    grid.appendChild(card);
                 });
             });
     }
 
     function openAddUserModal() {
-        document.getElementById('user-modal-title').innerHTML = '<i class="fa-solid fa-user-plus" style="color:var(--color-primary);"></i> Nouvel Utilisateur';
+        document.getElementById('user-modal-title').innerText = 'Nouvel Utilisateur';
         document.getElementById('user-form').reset();
         document.getElementById('user-id').value = '';
         document.getElementById('user-password').required = true;
-        document.querySelector('#user-form [type="submit"]').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Créer le compte';
         document.getElementById('user-modal').classList.add('active');
     }
 
-    function editUser(u) {
-        document.getElementById('user-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--color-primary);"></i> Modifier Utilisateur';
-        document.getElementById('user-id').value = u.id;
-        document.getElementById('user-nom').value = u.nom;
-        document.getElementById('user-username').value = u.username;
-        document.getElementById('user-role').value = u.role;
+    function editUser(id, nom, username, role) {
+        document.getElementById('user-modal-title').innerText = 'Modifier l\'Utilisateur';
+        document.getElementById('user-id').value = id;
+        document.getElementById('user-nom').value = nom;
+        document.getElementById('user-username').value = username;
+        document.getElementById('user-role').value = role;
         document.getElementById('user-password').value = '';
         document.getElementById('user-password').required = false;
-        document.querySelector('#user-form [type="submit"]').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Enregistrer';
         document.getElementById('user-modal').classList.add('active');
     }
 
@@ -243,58 +295,6 @@
         }
     }
 
-<!-- Section Maintenance & Remise à Zéro avant Livraison -->
-<div style="margin-top: 2rem; padding: 1.25rem; background: #fff5f5; border: 1px solid #fca5a5; border-radius: 14px;">
-    <h3 style="color: #dc2626; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-        <i class="fa-solid fa-triangle-exclamation"></i> Maintenance — Remise à Zéro avant Livraison Client
-    </h3>
-    <p style="color: #991b1b; font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.5;">
-        Cliquez sur ce bouton pour <strong>effacer toutes les données de démonstration/test</strong> (médicaments fictifs, historique de ventes, mouvements de stock, fournisseurs) afin de livrer une application 100% propre à la clinique. <br>
-        <em>Note : Vos comptes d'accès (Super-Admin, Caissiers) sont conservés.</em>
-    </p>
-    <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
-        <button class="btn" onclick="openResetModal()" style="background: #dc2626; color: white; border: none; font-weight: 800; padding: 0.65rem 1.25rem; font-size: 0.88rem; box-shadow: 0 4px 12px rgba(220,38,38,0.25);">
-            <i class="fa-solid fa-trash-can"></i> Remettre la Base à Zéro (Purger les Tests)
-        </button>
-        <button class="btn btn-secondary" onclick="seedDemoData()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700; padding: 0.65rem 1.25rem; font-size: 0.88rem;">
-            <i class="fa-solid fa-database"></i> Charger les Données de Démo
-        </button>
-    </div>
-</div>
-
-<!-- Modal Confirmation Remise à Zéro -->
-<div class="modal" id="reset-db-modal">
-    <div class="modal-content" style="max-width: 480px; border: 1px solid #fca5a5; background: #ffffff;">
-        <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; border-radius: 20px 20px 0 0;">
-            <h3 style="color: #dc2626; font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-triangle-exclamation"></i> Confirmer la Remise à Zéro
-            </h3>
-            <button class="modal-close" onclick="closeResetModal()" style="color: #dc2626;">&times;</button>
-        </div>
-        <div class="modal-body" style="padding: 1.5rem; text-align: center;">
-            <p style="font-size: 0.98rem; color: #064e3b; font-weight: 600; line-height: 1.6;">
-                Êtes-vous absolument sûr de vouloir purger la base de données ?
-            </p>
-            <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 1rem; color: #991b1b; font-size: 0.85rem; text-align: left;">
-                ⚠️ <strong>Cette action va supprimer :</strong>
-                <ul style="margin-top: 0.4rem; padding-left: 1.2rem;">
-                    <li>Tous les médicaments enregistrés</li>
-                    <li>Tout l'historique des ventes et factures</li>
-                    <li>Tous les mouvements et alertes de stock</li>
-                    <li>Tous les fournisseurs</li>
-                </ul>
-            </div>
-        </div>
-        <div class="modal-footer" style="background: #f0fdf4; border-top: 1px solid #e6f7ed; border-radius: 0 0 20px 20px;">
-            <button class="btn btn-secondary" onclick="closeResetModal()" style="border: 1px solid #a7f3d0; background: #ffffff; color: #047857; font-weight: 700;">Annuler</button>
-            <button class="btn" onclick="executeResetDB()" style="background: #dc2626; color: white; font-weight: 800; border: none; padding: 0.6rem 1.2rem;">
-                <i class="fa-solid fa-trash-can"></i> Oui, tout effacer
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
     function openResetModal() { document.getElementById('reset-db-modal').classList.add('active'); }
     function closeResetModal() { document.getElementById('reset-db-modal').classList.remove('active'); }
     
