@@ -22,6 +22,14 @@
 </head>
 <body>
 
+    <!-- Barre de chargement supérieure instantanée (0ms feedback au clic) -->
+    <div id="page-top-loader" style="
+        position: fixed; top: 0; left: 0; width: 0%; height: 4px;
+        background: linear-gradient(90deg, #10b981, #34d399, #059669);
+        z-index: 999999; transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: none; box-shadow: 0 0 12px rgba(16,185,129,0.8);
+    "></div>
+
     <!-- Fond d'écran ambiance Clinique Tounkara (Orbes lumineuses néon) -->
     <div class="bg-glow-orbs">
         <div class="bg-orb bg-orb-1"></div>
@@ -481,14 +489,33 @@
             }
         })();
 
-        // Fermer sidebar automatiquement quand on clique sur un lien de menu (navigation fluide)
+        // Feedback visuel instantané (0ms) au clic sur n'importe quel lien
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && link.href && !link.href.startsWith('javascript:') && !link.href.includes('#') && link.target !== '_blank') {
+                const loader = document.getElementById('page-top-loader');
+                if (loader) {
+                    loader.style.display = 'block';
+                    loader.style.width = '40%';
+                    setTimeout(() => { loader.style.width = '80%'; }, 150);
+                }
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Fermer le loader à la fin du chargement de la page
+            const loader = document.getElementById('page-top-loader');
+            if (loader) {
+                loader.style.width = '100%';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    loader.style.width = '0%';
+                }, 200);
+            }
+
             document.querySelectorAll('.sidebar-menu .menu-item').forEach(function(link) {
                 link.addEventListener('click', function() {
                     localStorage.setItem('sidebarClosed', '1');
-                    if (window.innerWidth <= 768) {
-                        setTimeout(closeSidebar, 150);
-                    }
                 });
             });
 
