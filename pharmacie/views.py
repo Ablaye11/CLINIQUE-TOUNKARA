@@ -340,13 +340,19 @@ def api_medicament_save(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt
-@api_role_required('superadmin', 'admin')
+@api_role_required('superadmin', 'admin', 'caissier')
 def api_medicament_delete(request, med_id):
     if request.method == 'POST':
-        med = get_object_or_404(Medicament, id=med_id)
-        med.delete()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+        try:
+            med = get_object_or_404(Medicament, id=med_id)
+            # Supprimer les mouvements et lignes de vente associés pour éviter les blocages de contraintes SQL
+            MouvementStock.objects.filter(medicament=med).delete()
+            LigneVente.objects.filter(medicament=med).delete()
+            med.delete()
+            return JsonResponse({'success': True, 'message': 'Médicament supprimé avec succès'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f"Erreur lors de la suppression : {str(e)}"}, status=400)
+    return JsonResponse({'success': False, 'error': 'Méthode non autorisée'}, status=405)
 
 
 # --- API STOCKS ---
